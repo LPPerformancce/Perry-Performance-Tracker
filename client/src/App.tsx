@@ -9,7 +9,12 @@ import { AppLayout } from "@/components/layout/AppLayout";
 // Pages
 import Dashboard from "@/pages/Dashboard";
 import Workout from "@/pages/Workout";
-import Exercises from "@/pages/Exercises";
+import ActiveWorkout from "@/pages/ActiveWorkout";
+import Messages from "@/pages/Messages";
+import Community from "@/pages/Community";
+import Challenges from "@/pages/Challenges";
+import Bootcamps from "@/pages/Bootcamps";
+import CoachDashboard from "@/pages/CoachDashboard";
 import Profile from "@/pages/Profile";
 
 function Router() {
@@ -18,7 +23,12 @@ function Router() {
       <Switch>
         <Route path="/" component={Dashboard}/>
         <Route path="/workout" component={Workout}/>
-        <Route path="/exercises" component={Exercises}/>
+        <Route path="/workout/active/:id" component={ActiveWorkout}/>
+        <Route path="/community" component={Community}/>
+        <Route path="/messages" component={Messages}/>
+        <Route path="/challenges" component={Challenges}/>
+        <Route path="/bootcamps" component={Bootcamps}/>
+        <Route path="/coach" component={CoachDashboard}/>
         <Route path="/profile" component={Profile}/>
         <Route component={NotFound} />
       </Switch>
