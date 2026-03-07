@@ -14,8 +14,10 @@ import Messages from "@/pages/Messages";
 import Community from "@/pages/Community";
 import Challenges from "@/pages/Challenges";
 import Bootcamps from "@/pages/Bootcamps";
+import Friends from "@/pages/Friends";
 import CoachDashboard from "@/pages/CoachDashboard";
 import Profile from "@/pages/Profile";
+import Exercises from "@/pages/Exercises";
 
 function Router() {
   return (
@@ -24,10 +26,12 @@ function Router() {
         <Route path="/" component={Dashboard}/>
         <Route path="/workout" component={Workout}/>
         <Route path="/workout/active/:id" component={ActiveWorkout}/>
+        <Route path="/exercises" component={Exercises}/>
         <Route path="/community" component={Community}/>
         <Route path="/messages" component={Messages}/>
         <Route path="/challenges" component={Challenges}/>
         <Route path="/bootcamps" component={Bootcamps}/>
+        <Route path="/friends" component={Friends}/>
         <Route path="/coach" component={CoachDashboard}/>
         <Route path="/profile" component={Profile}/>
         <Route component={NotFound} />

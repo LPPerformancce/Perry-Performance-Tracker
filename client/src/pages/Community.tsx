@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { MessageSquare, Heart, Share2, Flame, Target } from "lucide-react";
+import { MessageSquare, Heart, Share2, Flame, Target, Users as UsersIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,6 +32,16 @@ export default function Community() {
                 <Target className="w-5 h-5" />
               </div>
               <h3 className="font-semibold text-sm text-emerald-900">Seasonal<br/>Bootcamps</h3>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/friends">
+          <Card className="min-w-[140px] bg-gradient-to-br from-orange-50 to-amber-50 border-orange-100 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2 h-full">
+              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 mb-1">
+                <UsersIcon className="w-5 h-5" />
+              </div>
+              <h3 className="font-semibold text-sm text-orange-900">Connect<br/>Friends</h3>
             </CardContent>
           </Card>
         </Link>

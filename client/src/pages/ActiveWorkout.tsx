@@ -1,54 +1,70 @@
 import { useState } from "react";
-import { useLocation, Link } from "wouter";
-import { ArrowLeft, Check, Timer, X, MoreHorizontal, Info } from "lucide-react";
+import { useLocation } from "wouter";
+import { ArrowLeft, Check, Timer, X, MoreHorizontal, Info, GripVertical, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { exercisesDatabase, Exercise } from "@/lib/exercises";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default function ActiveWorkout() {
   const [, setLocation] = useLocation();
   const [activeSet, setActiveSet] = useState<{ exercise: number, set: number }>({ exercise: 0, set: 0 });
   const [completedSets, setCompletedSets] = useState<Record<string, boolean>>({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [showExerciseLibrary, setShowExerciseLibrary] = useState(false);
+  const [replacingExerciseIndex, setReplacingExerciseIndex] = useState<number | null>(null);
 
-  const workoutData = {
-    title: "Full Body Foundation",
+  // Generate an initial weight based on last session (mocking the "intelligent load recommendation")
+  const suggestWeight = (baseWeight: string) => {
+    const num = parseInt(baseWeight);
+    if (isNaN(num)) return baseWeight;
+    // Suggest 5lbs more than the base weight 
+    return (num + 5).toString();
+  };
+
+  const [workoutData, setWorkoutData] = useState({
+    title: "Foundation: Full Body",
     duration: "45-55 min",
     exercises: [
       {
         id: 1,
-        name: "Dumbbell Goblet Squat",
-        target: "Quads, Core",
-        notes: "Keep chest up and elbows tucked.",
+        exerciseId: "e11",
+        name: "Barbell Back Squat",
+        target: "Quads",
+        notes: "Focus on depth and driving through the mid-foot.",
         sets: [
-          { reps: "10", weight: "40", rpe: "7" },
-          { reps: "10", weight: "40", rpe: "7" },
-          { reps: "10", weight: "45", rpe: "8" },
+          { reps: "8-10", weight: suggestWeight("135"), rpe: "7", previousWeight: "135" },
+          { reps: "8-10", weight: suggestWeight("135"), rpe: "7", previousWeight: "135" },
+          { reps: "8-10", weight: suggestWeight("135"), rpe: "8", previousWeight: "135" },
         ]
       },
       {
         id: 2,
+        exerciseId: "e2",
         name: "Incline Dumbbell Press",
         target: "Chest, Shoulders",
         notes: "Control the eccentric (lowering) phase.",
         sets: [
-          { reps: "8-10", weight: "35", rpe: "8" },
-          { reps: "8-10", weight: "35", rpe: "8" },
-          { reps: "8-10", weight: "35", rpe: "9" },
+          { reps: "8-10", weight: suggestWeight("40"), rpe: "8", previousWeight: "40" },
+          { reps: "8-10", weight: suggestWeight("40"), rpe: "8", previousWeight: "40" },
+          { reps: "8-10", weight: suggestWeight("40"), rpe: "9", previousWeight: "40" },
         ]
       },
       {
         id: 3,
+        exerciseId: "e8",
         name: "Seated Cable Row",
         target: "Back, Biceps",
         notes: "Squeeze shoulder blades together.",
         sets: [
-          { reps: "12", weight: "80", rpe: "8" },
-          { reps: "12", weight: "80", rpe: "8" },
+          { reps: "12", weight: suggestWeight("100"), rpe: "8", previousWeight: "100" },
+          { reps: "12", weight: suggestWeight("100"), rpe: "8", previousWeight: "100" },
         ]
       }
     ]
-  };
+  });
 
   const toggleSet = (exIndex: number, setIndex: number) => {
     const key = `${exIndex}-${setIndex}`;
@@ -65,6 +81,69 @@ export default function ActiveWorkout() {
     setLocation("/");
   };
 
+  const swapExercise = (newExercise: Exercise) => {
+    if (replacingExerciseIndex === null) {
+      // Adding a new exercise
+      const newExData = {
+        id: Date.now(),
+        exerciseId: newExercise.id,
+        name: newExercise.name,
+        target: newExercise.target,
+        notes: newExercise.description,
+        sets: [
+          { reps: "10", weight: "0", rpe: "7", previousWeight: "0" },
+          { reps: "10", weight: "0", rpe: "7", previousWeight: "0" },
+          { reps: "10", weight: "0", rpe: "8", previousWeight: "0" },
+        ]
+      };
+      setWorkoutData({
+        ...workoutData,
+        exercises: [...workoutData.exercises, newExData]
+      });
+    } else {
+      // Replacing an existing exercise
+      const newExercises = [...workoutData.exercises];
+      newExercises[replacingExerciseIndex] = {
+        ...newExercises[replacingExerciseIndex],
+        exerciseId: newExercise.id,
+        name: newExercise.name,
+        target: newExercise.target,
+        notes: newExercise.description
+      };
+      setWorkoutData({
+        ...workoutData,
+        exercises: newExercises
+      });
+      toast.success("Exercise swapped");
+    }
+    setShowExerciseLibrary(false);
+    setReplacingExerciseIndex(null);
+  };
+
+  const moveExercise = (index: number, direction: 'up' | 'down') => {
+    if (
+      (direction === 'up' && index === 0) || 
+      (direction === 'down' && index === workoutData.exercises.length - 1)
+    ) return;
+
+    const newExercises = [...workoutData.exercises];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    // Swap
+    const temp = newExercises[index];
+    newExercises[index] = newExercises[targetIndex];
+    newExercises[targetIndex] = temp;
+    
+    setWorkoutData({ ...workoutData, exercises: newExercises });
+  };
+
+  const addSet = (exIndex: number) => {
+    const newExercises = [...workoutData.exercises];
+    const lastSet = newExercises[exIndex].sets[newExercises[exIndex].sets.length - 1];
+    newExercises[exIndex].sets.push({ ...lastSet });
+    setWorkoutData({ ...workoutData, exercises: newExercises });
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20 animate-in fade-in duration-300">
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
@@ -79,22 +158,59 @@ export default function ActiveWorkout() {
             </div>
           </div>
         </div>
-        <Button variant="default" size="sm" onClick={finishWorkout} className="font-medium bg-primary text-primary-foreground">
-          Finish
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant={isEditing ? "default" : "outline"} 
+            size="sm" 
+            onClick={() => setIsEditing(!isEditing)} 
+            className="font-medium h-8"
+          >
+            {isEditing ? "Done" : "Edit"}
+          </Button>
+          <Button variant="default" size="sm" onClick={finishWorkout} className="font-medium bg-primary text-primary-foreground h-8">
+            Finish
+          </Button>
+        </div>
       </header>
 
       <div className="p-4 space-y-6">
         {workoutData.exercises.map((exercise, exIndex) => (
-          <Card key={exercise.id} className="border-border shadow-sm overflow-hidden bg-card">
+          <Card key={exercise.id} className={`border-border shadow-sm overflow-hidden bg-card ${isEditing ? 'border-primary/50 ring-1 ring-primary/20' : ''}`}>
             <div className="p-4 bg-muted/30 border-b border-border flex justify-between items-start">
-              <div>
-                <h2 className="font-semibold text-lg text-primary">{exercise.name}</h2>
-                <p className="text-sm text-muted-foreground">{exercise.target}</p>
+              <div className="flex gap-3 items-start">
+                {isEditing && (
+                  <div className="flex flex-col gap-1 mt-1 text-muted-foreground">
+                    <button onClick={() => moveExercise(exIndex, 'up')} disabled={exIndex === 0} className="disabled:opacity-30">
+                      <GripVertical className="w-4 h-4 rotate-90" />
+                    </button>
+                    <button onClick={() => moveExercise(exIndex, 'down')} disabled={exIndex === workoutData.exercises.length - 1} className="disabled:opacity-30">
+                      <GripVertical className="w-4 h-4 rotate-90" />
+                    </button>
+                  </div>
+                )}
+                <div>
+                  <h2 className="font-semibold text-lg text-primary">{exercise.name}</h2>
+                  <p className="text-sm text-muted-foreground">{exercise.target}</p>
+                </div>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground -mr-2">
-                <MoreHorizontal className="w-5 h-5" />
-              </Button>
+              
+              {isEditing ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-8 text-xs bg-card"
+                  onClick={() => {
+                    setReplacingExerciseIndex(exIndex);
+                    setShowExerciseLibrary(true);
+                  }}
+                >
+                  Swap
+                </Button>
+              ) : (
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground -mr-2">
+                  <MoreHorizontal className="w-5 h-5" />
+                </Button>
+              )}
             </div>
             
             <div className="px-4 py-2 bg-blue-50/50 flex items-start gap-2 text-sm text-primary/80">
@@ -105,7 +221,10 @@ export default function ActiveWorkout() {
             <div className="p-0">
               <div className="grid grid-cols-[1fr_2fr_2fr_2fr_auto] gap-2 px-4 py-2 text-xs font-medium text-muted-foreground border-b border-border">
                 <div className="text-center">Set</div>
-                <div className="text-center">lbs</div>
+                <div className="text-center flex flex-col items-center">
+                  <span>lbs</span>
+                  <span className="text-[9px] text-emerald-600 font-semibold bg-emerald-50 px-1 rounded block mt-0.5">Sug: +5</span>
+                </div>
                 <div className="text-center">Reps</div>
                 <div className="text-center">RPE</div>
                 <div className="w-8"></div>
@@ -118,7 +237,7 @@ export default function ActiveWorkout() {
                 return (
                   <div 
                     key={setIndex} 
-                    className={`grid grid-cols-[1fr_2fr_2fr_2fr_auto] gap-2 px-4 py-3 items-center border-b border-border/50 last:border-0 transition-colors
+                    className={`grid grid-cols-[1fr_2fr_2fr_2fr_auto] gap-2 px-4 py-3 items-center border-b border-border/50 last:border-0 transition-colors relative
                       ${isCompleted ? 'bg-secondary/40' : isActive ? 'bg-primary/5' : ''}
                     `}
                     onClick={() => !isCompleted && setActiveSet({ exercise: exIndex, set: setIndex })}
@@ -129,7 +248,10 @@ export default function ActiveWorkout() {
                     <div>
                       <Input 
                         defaultValue={set.weight} 
-                        className={`h-9 text-center font-semibold ${isCompleted ? 'bg-transparent border-transparent text-muted-foreground' : 'bg-background'}`}
+                        className={`h-9 text-center font-semibold ${
+                          isCompleted ? 'bg-transparent border-transparent text-muted-foreground' : 
+                          set.weight !== set.previousWeight ? 'border-emerald-200 bg-emerald-50 focus-visible:ring-emerald-500' : 'bg-background'
+                        }`}
                         readOnly={isCompleted}
                       />
                     </div>
@@ -175,18 +297,62 @@ export default function ActiveWorkout() {
               })}
             </div>
             
-            <div className="p-3 border-t border-border bg-muted/10">
-              <Button variant="ghost" size="sm" className="w-full text-xs text-primary/80 font-medium">
-                + Add Set
-              </Button>
-            </div>
+            {isEditing && (
+              <div className="p-3 border-t border-border bg-muted/10">
+                <Button variant="ghost" size="sm" className="w-full text-xs text-primary/80 font-medium" onClick={() => addSet(exIndex)}>
+                  + Add Set
+                </Button>
+              </div>
+            )}
           </Card>
         ))}
         
-        <Button variant="outline" className="w-full h-12 border-dashed border-2 border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors">
-          + Add Exercise
-        </Button>
+        {isEditing && (
+          <Button 
+            variant="outline" 
+            className="w-full h-12 border-dashed border-2 border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+            onClick={() => {
+              setReplacingExerciseIndex(null);
+              setShowExerciseLibrary(true);
+            }}
+          >
+            <Plus className="w-5 h-5 mr-2" /> Add Exercise
+          </Button>
+        )}
       </div>
+
+      <Dialog open={showExerciseLibrary} onOpenChange={setShowExerciseLibrary}>
+        <DialogContent className="max-w-md w-[95vw] h-[80vh] flex flex-col p-0 gap-0 rounded-xl overflow-hidden">
+          <DialogHeader className="p-4 border-b border-border bg-background flex-shrink-0">
+            <DialogTitle>
+              {replacingExerciseIndex !== null ? "Swap Exercise" : "Add Exercise"}
+            </DialogTitle>
+            <div className="pt-3">
+              <Input placeholder="Search exercises..." className="bg-card" />
+            </div>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-secondary/30">
+            {exercisesDatabase.map((ex) => (
+              <Card 
+                key={ex.id} 
+                className="border-border shadow-sm hover:border-primary/50 cursor-pointer transition-colors"
+                onClick={() => swapExercise(ex)}
+              >
+                <CardContent className="p-3 flex items-center gap-3">
+                  <div className="w-12 h-12 rounded bg-secondary flex items-center justify-center font-display font-bold text-primary/40 border border-border">
+                    {ex.imagePlaceholder}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">{ex.name}</h4>
+                    <p className="text-xs text-muted-foreground">{ex.target} • {ex.equipment}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
