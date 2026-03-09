@@ -67,35 +67,39 @@ export default function Profile() {
         <h3 className="font-semibold text-lg text-foreground">Tracking & Records</h3>
         
         <div className="grid gap-3">
-          <Card className="bg-card border-border shadow-sm cursor-pointer hover:border-primary/30 transition-colors">
-            <CardContent className="p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-primary">
-                  <Award className="w-5 h-5" />
+          <Link href="/progress">
+            <Card className="bg-card border-border shadow-sm cursor-pointer hover:border-primary/30 transition-colors">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-primary">
+                    <Activity className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">Progress & Analytics</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">Volume, consistency, PRs</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-semibold text-sm">Personal Records</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">View your lifting progression</p>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </CardContent>
-          </Card>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
           
-          <Card className="bg-card border-border shadow-sm cursor-pointer hover:border-primary/30 transition-colors">
-            <CardContent className="p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-primary">
-                  <Ruler className="w-5 h-5" />
+          <Link href="/progress">
+            <Card className="bg-card border-border shadow-sm cursor-pointer hover:border-primary/30 transition-colors">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-primary">
+                    <Ruler className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">Body Measurements</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">Track weight and dimensions</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-semibold text-sm">Body Measurements</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">Track weight and dimensions</p>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </CardContent>
-          </Card>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </section>
     </div>

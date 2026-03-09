@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, FileText, Plus, Search, Settings, GripVertical, Play, Edit3, Trash2 } from "lucide-react";
+import { Users, FileText, Plus, Search, Settings, GripVertical, Play, Edit3, Trash2, Video, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,8 @@ import { exercisesDatabase, Exercise } from "@/lib/exercises";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function CoachDashboard() {
-  const [activeTab, setActiveTab] = useState<"clients" | "programs" | "builder">("programs");
+  const [activeTab, setActiveTab] = useState<"clients" | "programs" | "library" | "builder">("programs");
+
   
   // Program Builder State
   const [programTitle, setProgramTitle] = useState("New Foundation Plan");
@@ -46,6 +47,14 @@ export default function CoachDashboard() {
           onClick={() => setActiveTab("programs")}
         >
           Programs
+        </Button>
+        <Button 
+          variant={activeTab === "library" ? "default" : "ghost"} 
+          size="sm" 
+          className="flex-1 h-8 text-xs font-medium"
+          onClick={() => setActiveTab("library")}
+        >
+          Library
         </Button>
       </div>
 
@@ -147,6 +156,69 @@ export default function CoachDashboard() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </section>
+      )}
+
+      {activeTab === "library" && (
+        <section className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-lg">Exercise Media</h2>
+            <Button size="sm" className="h-8 text-xs gap-1 bg-primary text-primary-foreground">
+              <Plus className="w-3.5 h-3.5" /> Add New
+            </Button>
+          </div>
+          
+          <p className="text-sm text-muted-foreground">Upload your own videos to act as the primary demonstration for your clients.</p>
+
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search exercises to add video..." 
+              className="pl-9 bg-card border-border shadow-sm h-10"
+            />
+          </div>
+
+          <div className="space-y-3">
+            {exercisesDatabase.slice(0, 5).map((ex, i) => (
+              <Card key={ex.id} className="border-border shadow-sm overflow-hidden">
+                <CardContent className="p-0 flex items-stretch">
+                  <div className="w-24 bg-secondary flex items-center justify-center relative group overflow-hidden">
+                    {i < 2 ? (
+                      <>
+                        <img src={`https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=200&auto=format&fit=crop`} className="w-full h-full object-cover opacity-60" alt="demo" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Play className="w-6 h-6 text-white" fill="white" />
+                        </div>
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
+                          <span className="text-xs text-white font-medium">Replace</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1 text-muted-foreground cursor-pointer hover:text-primary transition-colors p-2 text-center">
+                        <UploadCloud className="w-6 h-6" />
+                        <span className="text-[10px] font-medium leading-tight">Upload<br/>Video</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3 flex-1 flex flex-col justify-center">
+                    <h4 className="font-semibold text-sm text-foreground">{ex.name}</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">{ex.target} • {ex.equipment}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      {i < 2 ? (
+                        <span className="text-[10px] font-medium bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded flex items-center gap-1 border border-emerald-100">
+                          <Video className="w-3 h-3" /> Custom Video Active
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-medium bg-muted text-muted-foreground px-2 py-0.5 rounded border border-border">
+                          No Custom Video
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </section>
       )}

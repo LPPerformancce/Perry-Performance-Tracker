@@ -18,6 +18,7 @@ import Friends from "@/pages/Friends";
 import CoachDashboard from "@/pages/CoachDashboard";
 import Profile from "@/pages/Profile";
 import Exercises from "@/pages/Exercises";
+import Progress from "@/pages/Progress";
 
 function Router() {
   return (
@@ -32,6 +33,7 @@ function Router() {
         <Route path="/challenges" component={Challenges}/>
         <Route path="/bootcamps" component={Bootcamps}/>
         <Route path="/friends" component={Friends}/>
+        <Route path="/progress" component={Progress}/>
         <Route path="/coach" component={CoachDashboard}/>
         <Route path="/profile" component={Profile}/>
         <Route component={NotFound} />
