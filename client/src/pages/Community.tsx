@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { MessageSquare, Heart, Share2, Flame, Target, Users as UsersIcon } from "lucide-react";
+import { MessageSquare, Heart, Share2, Flame, Target, Users as UsersIcon, Camera, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,39 +16,60 @@ export default function Community() {
 
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4">
         <Link href="/challenges">
-          <Card className="min-w-[140px] bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+          <Card className="min-w-[120px] bg-gradient-to-br from-card to-secondary/50 border-border shadow-sm cursor-pointer hover:border-primary/50 transition-colors">
             <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2 h-full">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mb-1">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
                 <Flame className="w-5 h-5" />
               </div>
-              <h3 className="font-semibold text-sm text-blue-900">Weekly<br/>Challenges</h3>
+              <h3 className="font-semibold text-xs text-foreground">Weekly<br/>Challenges</h3>
             </CardContent>
           </Card>
         </Link>
         <Link href="/bootcamps">
-          <Card className="min-w-[140px] bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-100 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+          <Card className="min-w-[120px] bg-gradient-to-br from-card to-secondary/50 border-border shadow-sm cursor-pointer hover:border-primary/50 transition-colors">
             <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2 h-full">
-              <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mb-1">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
                 <Target className="w-5 h-5" />
               </div>
-              <h3 className="font-semibold text-sm text-emerald-900">Seasonal<br/>Bootcamps</h3>
+              <h3 className="font-semibold text-xs text-foreground">Seasonal<br/>Bootcamps</h3>
             </CardContent>
           </Card>
         </Link>
         <Link href="/friends">
-          <Card className="min-w-[140px] bg-gradient-to-br from-orange-50 to-amber-50 border-orange-100 shadow-sm cursor-pointer hover:shadow-md transition-shadow">
+          <Card className="min-w-[120px] bg-gradient-to-br from-card to-secondary/50 border-border shadow-sm cursor-pointer hover:border-primary/50 transition-colors">
             <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2 h-full">
-              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 mb-1">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
                 <UsersIcon className="w-5 h-5" />
               </div>
-              <h3 className="font-semibold text-sm text-orange-900">Connect<br/>Friends</h3>
+              <h3 className="font-semibold text-xs text-foreground">Connect<br/>Friends</h3>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/messages">
+          <Card className="min-w-[120px] bg-gradient-to-br from-card to-secondary/50 border-border shadow-sm cursor-pointer hover:border-primary/50 transition-colors">
+            <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2 h-full">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
+                <MessageSquare className="w-5 h-5" />
+              </div>
+              <h3 className="font-semibold text-xs text-foreground">Group<br/>Chat</h3>
             </CardContent>
           </Card>
         </Link>
       </div>
 
+      <div className="grid grid-cols-2 gap-3">
+        <Button variant="outline" className="h-12 bg-card border-border shadow-sm text-foreground flex items-center gap-2 justify-start px-4">
+          <Camera className="w-4 h-4 text-primary" />
+          <span className="font-medium text-xs">Share Photo</span>
+        </Button>
+        <Button variant="outline" className="h-12 bg-card border-border shadow-sm text-foreground flex items-center gap-2 justify-start px-4">
+          <ChefHat className="w-4 h-4 text-primary" />
+          <span className="font-medium text-xs">Share Recipe</span>
+        </Button>
+      </div>
+
       <div className="space-y-4">
-        <h2 className="font-semibold text-lg">Recent Posts</h2>
+        <h2 className="font-semibold text-lg">Community Feed</h2>
 
         <Card className="border-border shadow-sm">
           <CardHeader className="p-4 pb-2 flex flex-row items-center gap-3">
@@ -89,12 +110,12 @@ export default function Community() {
         <Card className="border-border shadow-sm">
           <CardHeader className="p-4 pb-2 flex flex-row items-center gap-3">
             <Avatar>
-              <AvatarFallback className="bg-primary/10 text-primary">LP</AvatarFallback>
+              <AvatarFallback className="bg-primary/20 text-primary">LP</AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <h4 className="font-semibold text-sm">Coach Lee</h4>
-                <span className="bg-primary/10 text-primary text-[10px] px-1.5 py-0.5 rounded font-medium">Admin</span>
+                <span className="bg-primary/20 text-primary text-[10px] px-1.5 py-0.5 rounded font-medium">Admin</span>
               </div>
               <p className="text-xs text-muted-foreground">Yesterday • Announcement</p>
             </div>

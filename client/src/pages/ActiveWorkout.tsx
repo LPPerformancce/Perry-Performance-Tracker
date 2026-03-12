@@ -8,12 +8,15 @@ import { toast } from "sonner";
 import { exercisesDatabase, Exercise } from "@/lib/exercises";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 export default function ActiveWorkout() {
   const [, setLocation] = useLocation();
   const [activeSet, setActiveSet] = useState<{ exercise: number, set: number }>({ exercise: 0, set: 0 });
   const [completedSets, setCompletedSets] = useState<Record<string, boolean>>({});
   const [isEditing, setIsEditing] = useState(false);
   const [showExerciseLibrary, setShowExerciseLibrary] = useState(false);
+  const [showVideoDemo, setShowVideoDemo] = useState<Exercise | null>(null);
   const [replacingExerciseIndex, setReplacingExerciseIndex] = useState<number | null>(null);
 
   // Generate an initial weight based on last session (mocking the "intelligent load recommendation")
@@ -137,11 +140,26 @@ export default function ActiveWorkout() {
     setWorkoutData({ ...workoutData, exercises: newExercises });
   };
 
-  const addSet = (exIndex: number) => {
+  const removeSet = (exIndex: number) => {
     const newExercises = [...workoutData.exercises];
-    const lastSet = newExercises[exIndex].sets[newExercises[exIndex].sets.length - 1];
-    newExercises[exIndex].sets.push({ ...lastSet });
-    setWorkoutData({ ...workoutData, exercises: newExercises });
+    if (newExercises[exIndex].sets.length > 1) {
+      newExercises[exIndex].sets.pop();
+      setWorkoutData({ ...workoutData, exercises: newExercises });
+    } else {
+      toast.error("Cannot remove the last set");
+    }
+  };
+
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Clear value on focus to make entry easier, user can type new value immediately
+    e.target.value = '';
+  };
+
+  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>, originalValue: string) => {
+    // Restore original value if they leave it empty
+    if (e.target.value === '') {
+      e.target.value = originalValue;
+    }
   };
 
   return (
@@ -207,9 +225,41 @@ export default function ActiveWorkout() {
                   Swap
                 </Button>
               ) : (
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground -mr-2">
-                  <MoreHorizontal className="w-5 h-5" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground -mr-2">
+                      <MoreHorizontal className="w-5 h-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">Exercise Actions</DropdownMenuLabel>
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        const fullEx = exercisesDatabase.find(e => e.id === exercise.exerciseId);
+                        if (fullEx) setShowVideoDemo(fullEx);
+                      }}
+                      className="cursor-pointer gap-2"
+                    >
+                      <Play className="w-4 h-4 text-primary" /> View Demonstration
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-border" />
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        setReplacingExerciseIndex(exIndex);
+                        setShowExerciseLibrary(true);
+                      }}
+                      className="cursor-pointer gap-2"
+                    >
+                      <Plus className="w-4 h-4" /> Swap Exercise
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => addSet(exIndex)} className="cursor-pointer gap-2">
+                      <Plus className="w-4 h-4" /> Add Set
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => removeSet(exIndex)} className="cursor-pointer text-destructive gap-2 focus:bg-destructive/10">
+                      <X className="w-4 h-4" /> Remove Set
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
             
@@ -223,7 +273,7 @@ export default function ActiveWorkout() {
                 <div className="text-center">Set</div>
                 <div className="text-center flex flex-col items-center">
                   <span>lbs</span>
-                  <span className="text-[9px] text-emerald-600 font-semibold bg-emerald-50 px-1 rounded block mt-0.5">Sug: +5</span>
+                  <span className="text-[9px] text-primary-foreground font-semibold bg-primary/80 px-1 rounded block mt-0.5">Sug: +5</span>
                 </div>
                 <div className="text-center">Reps</div>
                 <div className="text-center">RPE</div>
@@ -248,25 +298,37 @@ export default function ActiveWorkout() {
                     <div>
                       <Input 
                         defaultValue={set.weight} 
+                        onFocus={handleInputFocus}
+                        onBlur={(e) => handleInputBlur(e, set.weight)}
                         className={`h-9 text-center font-semibold ${
                           isCompleted ? 'bg-transparent border-transparent text-muted-foreground' : 
-                          set.weight !== set.previousWeight ? 'border-emerald-200 bg-emerald-50 focus-visible:ring-emerald-500' : 'bg-background'
+                          set.weight !== set.previousWeight ? 'border-primary/50 bg-primary/5 focus-visible:ring-primary/50' : 'bg-background focus-visible:ring-primary/50'
                         }`}
                         readOnly={isCompleted}
+                        type="number"
+                        inputMode="decimal"
                       />
                     </div>
                     <div>
                       <Input 
                         defaultValue={set.reps} 
-                        className={`h-9 text-center font-semibold ${isCompleted ? 'bg-transparent border-transparent text-muted-foreground' : 'bg-background'}`}
+                        onFocus={handleInputFocus}
+                        onBlur={(e) => handleInputBlur(e, set.reps)}
+                        className={`h-9 text-center font-semibold ${isCompleted ? 'bg-transparent border-transparent text-muted-foreground' : 'bg-background focus-visible:ring-primary/50'}`}
                         readOnly={isCompleted}
+                        type="text"
+                        inputMode="numeric"
                       />
                     </div>
                     <div>
                       <Input 
                         defaultValue={set.rpe} 
-                        className={`h-9 text-center font-semibold ${isCompleted ? 'bg-transparent border-transparent text-muted-foreground' : 'bg-background'}`}
+                        onFocus={handleInputFocus}
+                        onBlur={(e) => handleInputBlur(e, set.rpe)}
+                        className={`h-9 text-center font-semibold ${isCompleted ? 'bg-transparent border-transparent text-muted-foreground' : 'bg-background focus-visible:ring-primary/50'}`}
                         readOnly={isCompleted}
+                        type="number"
+                        inputMode="decimal"
                       />
                     </div>
                     <Button 
@@ -274,7 +336,7 @@ export default function ActiveWorkout() {
                       variant={isCompleted ? "default" : "outline"}
                       className={`h-9 w-9 rounded-md transition-colors ${
                         isCompleted 
-                          ? 'bg-green-600 hover:bg-green-700 text-white border-green-600' 
+                          ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary' 
                           : 'border-border text-muted-foreground hover:border-primary/50'
                       }`}
                       onClick={(e) => {
@@ -350,6 +412,51 @@ export default function ActiveWorkout() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!showVideoDemo} onOpenChange={(open) => !open && setShowVideoDemo(null)}>
+        <DialogContent className="max-w-md w-[95vw] p-0 overflow-hidden rounded-xl border-border">
+          <div className="relative aspect-video bg-black flex items-center justify-center">
+            <img 
+              src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=600&auto=format&fit=crop" 
+              alt="Coach demonstrating exercise" 
+              className="w-full h-full object-cover opacity-80"
+            />
+            <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+              <Button size="icon" className="w-12 h-12 rounded-full bg-primary/90 text-primary-foreground hover:bg-primary border-2 border-white/20">
+                <Play className="w-6 h-6 ml-1 fill-current" />
+              </Button>
+            </div>
+            <div className="absolute top-2 right-2">
+              <Button variant="ghost" size="icon" className="w-8 h-8 rounded-full bg-black/50 text-white hover:bg-black/70" onClick={() => setShowVideoDemo(null)}>
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between px-2 text-white">
+              <div className="flex gap-1 text-xs">
+                <span className="bg-black/50 px-2 py-0.5 rounded">0:00 / 0:45</span>
+              </div>
+              <span className="text-[10px] bg-black/50 px-2 py-0.5 rounded font-medium text-primary">Coach Demo</span>
+            </div>
+          </div>
+          
+          <div className="p-5 space-y-4">
+            <div>
+              <h2 className="text-xl font-display font-semibold text-foreground">{showVideoDemo?.name}</h2>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="bg-primary/10 text-primary px-2 py-1 rounded text-xs font-medium">{showVideoDemo?.target}</span>
+                <span className="bg-secondary text-secondary-foreground border border-border px-2 py-1 rounded text-xs font-medium">{showVideoDemo?.equipment}</span>
+                <span className="bg-secondary text-secondary-foreground border border-border px-2 py-1 rounded text-xs font-medium">{showVideoDemo?.mechanic}</span>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">How to Perform</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {showVideoDemo?.description}
+              </p>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
