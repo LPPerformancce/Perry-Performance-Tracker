@@ -183,11 +183,13 @@ export default function ActiveWorkout() {
             onClick={() => setIsEditing(!isEditing)} 
             className="font-medium h-8"
           >
-            {isEditing ? "Done" : "Edit"}
+            {isEditing ? "Save Edits" : "Edit Plan"}
           </Button>
-          <Button variant="default" size="sm" onClick={finishWorkout} className="font-medium bg-primary text-primary-foreground h-8">
-            Finish
-          </Button>
+          {!isEditing && (
+            <Button variant="default" size="sm" onClick={finishWorkout} className="font-medium bg-primary text-primary-foreground h-8">
+              Finish Session
+            </Button>
+          )}
         </div>
       </header>
 
