@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, FileText, Plus, Search, Settings, GripVertical, Play, Edit3, Trash2, Video, UploadCloud } from "lucide-react";
+import { Users, FileText, Plus, Search, Settings, GripVertical, Play, Edit3, Trash2, Video, UploadCloud, Utensils, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { exercisesDatabase, Exercise } from "@/lib/exercises";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function CoachDashboard() {
-  const [activeTab, setActiveTab] = useState<"clients" | "programs" | "library" | "builder">("programs");
+  const [activeTab, setActiveTab] = useState<"clients" | "programs" | "library" | "nutrition" | "builder">("programs");
 
   
   // Program Builder State
@@ -31,11 +31,11 @@ export default function CoachDashboard() {
         </Button>
       </header>
 
-      <div className="flex gap-2 bg-secondary p-1 rounded-lg">
+      <div className="flex gap-2 bg-secondary p-1 rounded-lg overflow-x-auto scrollbar-none">
         <Button 
           variant={activeTab === "clients" ? "default" : "ghost"} 
           size="sm" 
-          className="flex-1 h-8 text-xs font-medium"
+          className="flex-1 h-8 text-xs font-medium min-w-[80px]"
           onClick={() => setActiveTab("clients")}
         >
           Clients
@@ -43,7 +43,7 @@ export default function CoachDashboard() {
         <Button 
           variant={activeTab === "programs" ? "default" : "ghost"} 
           size="sm" 
-          className="flex-1 h-8 text-xs font-medium"
+          className="flex-1 h-8 text-xs font-medium min-w-[80px]"
           onClick={() => setActiveTab("programs")}
         >
           Programs
@@ -51,10 +51,18 @@ export default function CoachDashboard() {
         <Button 
           variant={activeTab === "library" ? "default" : "ghost"} 
           size="sm" 
-          className="flex-1 h-8 text-xs font-medium"
+          className="flex-1 h-8 text-xs font-medium min-w-[80px]"
           onClick={() => setActiveTab("library")}
         >
-          Library
+          Media
+        </Button>
+        <Button 
+          variant={activeTab === "nutrition" ? "default" : "ghost"} 
+          size="sm" 
+          className="flex-1 h-8 text-xs font-medium min-w-[80px]"
+          onClick={() => setActiveTab("nutrition")}
+        >
+          Nutrition
         </Button>
       </div>
 
@@ -94,11 +102,16 @@ export default function CoachDashboard() {
                       <p className="text-xs text-muted-foreground">{client.plan}</p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex flex-col items-end">
                     <div className="text-xs text-muted-foreground mb-1">Active {client.lastActive}</div>
-                    <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] bg-secondary text-secondary-foreground">
-                      Manage
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="icon" className="h-6 w-6 bg-secondary text-secondary-foreground">
+                        <Camera className="w-3 h-3" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] bg-secondary text-secondary-foreground">
+                        Manage
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -219,6 +232,53 @@ export default function CoachDashboard() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </section>
+      )}
+
+      {activeTab === "nutrition" && (
+        <section className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-lg">Nutrition Resources</h2>
+            <Button size="sm" className="h-8 text-xs gap-1 bg-primary text-primary-foreground">
+              <Plus className="w-3.5 h-3.5" /> New Plan
+            </Button>
+          </div>
+          
+          <div className="grid gap-3">
+            <Card className="border-border shadow-sm cursor-pointer hover:bg-secondary/20 transition-colors">
+              <CardContent className="p-4 flex flex-col gap-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Utensils className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm">LP High-Protein Lean Bulk</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">Preset Meal Plan • 2800 kcal</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><Edit3 className="w-4 h-4"/></Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border shadow-sm cursor-pointer hover:bg-secondary/20 transition-colors">
+              <CardContent className="p-4 flex flex-col gap-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm">Review Community Recipes</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">4 new submissions pending</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><ChevronRight className="w-4 h-4"/></Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </section>
       )}

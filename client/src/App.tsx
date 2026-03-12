@@ -19,6 +19,7 @@ import CoachDashboard from "@/pages/CoachDashboard";
 import Profile from "@/pages/Profile";
 import Exercises from "@/pages/Exercises";
 import Progress from "@/pages/Progress";
+import Nutrition from "@/pages/Nutrition";
 
 function Router() {
   return (
@@ -28,6 +29,7 @@ function Router() {
         <Route path="/workout" component={Workout}/>
         <Route path="/workout/active/:id" component={ActiveWorkout}/>
         <Route path="/exercises" component={Exercises}/>
+        <Route path="/nutrition" component={Nutrition}/>
         <Route path="/community" component={Community}/>
         <Route path="/messages" component={Messages}/>
         <Route path="/challenges" component={Challenges}/>

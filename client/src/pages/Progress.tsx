@@ -119,11 +119,39 @@ export default function Progress() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-lg flex items-center gap-2">
-            <Ruler className="w-5 h-5 text-indigo-500" /> Body Metrics
+            <Ruler className="w-5 h-5 text-primary" /> Body Metrics
           </h2>
-          <Button variant="outline" size="sm" className="h-8 text-xs">Log New</Button>
+          <Button variant="outline" size="sm" className="h-8 text-xs border-primary/20 text-primary">Log New</Button>
         </div>
         
+        {/* Photo Progress */}
+        <Card className="border-border shadow-sm mb-4">
+          <CardContent className="p-4">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-medium text-sm">Recent Photos</h3>
+              <span className="text-xs text-muted-foreground cursor-pointer hover:text-primary">Compare All</span>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none">
+              <div className="w-24 h-32 rounded-lg bg-secondary border-2 border-dashed border-border flex flex-col items-center justify-center text-muted-foreground cursor-pointer hover:border-primary/50 hover:text-primary transition-colors flex-shrink-0">
+                <span className="text-xl mb-1">+</span>
+                <span className="text-[10px] font-medium">Add Photo</span>
+              </div>
+              <div className="w-24 h-32 rounded-lg bg-secondary overflow-hidden flex-shrink-0 relative border border-border">
+                <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=200&auto=format&fit=crop" className="w-full h-full object-cover opacity-60 grayscale" alt="progress" />
+                <div className="absolute bottom-0 left-0 right-0 bg-background/80 backdrop-blur text-[10px] p-1 text-center font-medium border-t border-border">
+                  Oct 15
+                </div>
+              </div>
+              <div className="w-24 h-32 rounded-lg bg-secondary overflow-hidden flex-shrink-0 relative border border-primary/50">
+                <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=200&auto=format&fit=crop" className="w-full h-full object-cover opacity-80" alt="progress" />
+                <div className="absolute bottom-0 left-0 right-0 bg-primary text-primary-foreground text-[10px] p-1 text-center font-medium">
+                  Current
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid gap-3">
           {[
             { label: "Body Weight", current: "185.4 lbs", change: "-1.2 lbs", trend: "down" },

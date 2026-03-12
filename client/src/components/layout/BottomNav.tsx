@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Dumbbell, MessageSquare, Users, User } from "lucide-react";
+import { Home, Dumbbell, List, Utensils, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function BottomNav() {
@@ -13,14 +13,14 @@ export function BottomNav() {
   const navItems = [
     { href: "/", icon: Home, label: "Home" },
     { href: "/workout", icon: Dumbbell, label: "Workout" },
-    { href: "/community", icon: Users, label: "Community" },
-    { href: "/messages", icon: MessageSquare, label: "Coach" },
+    { href: "/exercises", icon: List, label: "Library" },
+    { href: "/nutrition", icon: Utensils, label: "Nutrition" },
     { href: "/profile", icon: User, label: "Profile" },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-md border-t border-border pb-safe shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]">
-      <div className="flex items-center justify-around h-16 px-2 max-w-md mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border pb-safe shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.5)]">
+      <div className="flex items-center justify-around h-16 px-1 max-w-md mx-auto">
         {navItems.map((item) => {
           const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
           const Icon = item.icon;
@@ -36,9 +36,9 @@ export function BottomNav() {
             >
               <div className={cn(
                 "p-1.5 rounded-full transition-all duration-200",
-                isActive ? "bg-primary/10" : "bg-transparent"
+                isActive ? "bg-primary/10 text-primary" : "bg-transparent text-muted-foreground"
               )}>
-                <Icon className="w-[22px] h-[22px]" strokeWidth={isActive ? 2.5 : 2} />
+                <Icon className="w-[20px] h-[20px]" strokeWidth={isActive ? 2.5 : 2} />
               </div>
               <span className={cn(
                 "text-[10px] font-medium tracking-wide transition-all duration-200",

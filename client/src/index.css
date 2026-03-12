@@ -36,45 +36,44 @@
 }
 
 :root {
-  /* Soft, professional, mature palette (Slate/Blue/Gray) */
-  --background: 210 20% 98%; /* Light gray-blue bg */
-  --foreground: 222 47% 11%;
+  /* LP Performance Black & Gold */
+  --background: 0 0% 5%; /* Deep black */
+  --foreground: 45 30% 90%; /* Soft off-white gold tint */
   
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-  --card-border: 214 32% 91%;
+  --card: 0 0% 8%; /* Slightly lighter black */
+  --card-foreground: 45 30% 90%;
+  --card-border: 0 0% 15%;
   
-  --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --popover-border: 214 32% 91%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 45 30% 90%;
+  --popover-border: 0 0% 15%;
   
-  /* Trustworthy slate-blue primary */
-  --primary: 215 25% 27%; 
-  --primary-foreground: 210 40% 98%;
+  /* Primary Gold */
+  --primary: 45 90% 55%; 
+  --primary-foreground: 0 0% 5%; /* Black text on gold */
   
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222 47% 11%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 45 30% 90%;
   
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
+  --muted: 0 0% 12%;
+  --muted-foreground: 45 10% 55%;
   
-  --accent: 210 40% 96%;
-  --accent-foreground: 222 47% 11%;
+  --accent: 45 90% 55%;
+  --accent-foreground: 0 0% 5%;
   
   --destructive: 0 84% 60%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive-foreground: 0 0% 98%;
 
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 215 25% 27%;
+  --border: 0 0% 15%;
+  --input: 0 0% 15%;
+  --ring: 45 90% 55%;
   
-  --radius: 0.75rem; /* softer corners */
+  --radius: 0.5rem; /* slightly sharper for a premium feel */
 
-  /* Soft shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 2px 0 rgba(0,0,0, 0.5);
+  --shadow: 0 1px 3px 0 rgba(0,0,0, 0.5), 0 1px 2px -1px rgba(0,0,0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0, 0.5), 0 2px 4px -2px rgba(0,0,0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0, 0.5), 0 4px 6px -4px rgba(0,0,0, 0.5);
 }
 
 @layer base {
@@ -85,7 +84,7 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tight text-primary;
+    @apply font-display tracking-tight text-foreground;
   }
 }
 

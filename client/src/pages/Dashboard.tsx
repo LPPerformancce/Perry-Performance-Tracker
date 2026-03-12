@@ -13,7 +13,7 @@ export default function Dashboard() {
           <h1 className="text-2xl font-display font-semibold text-primary">Lee Perry</h1>
           <p className="text-sm text-muted-foreground font-medium tracking-wide">PERFORMANCE</p>
         </div>
-        <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center border border-border shadow-sm">
+        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/50 shadow-sm">
           <span className="font-display font-semibold text-primary">LP</span>
         </div>
       </header>
