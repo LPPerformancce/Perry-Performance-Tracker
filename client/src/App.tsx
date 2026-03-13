@@ -10,6 +10,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Workout from "@/pages/Workout";
 import ActiveWorkout from "@/pages/ActiveWorkout";
+import WorkoutSummary from "@/pages/WorkoutSummary";
 import Messages from "@/pages/Messages";
 import Community from "@/pages/Community";
 import Challenges from "@/pages/Challenges";
@@ -29,6 +30,7 @@ function Router() {
         <Route path="/" component={Dashboard}/>
         <Route path="/workout" component={Workout}/>
         <Route path="/workout/active/:id" component={ActiveWorkout}/>
+        <Route path="/workout/summary/:id" component={WorkoutSummary}/>
         <Route path="/exercises" component={Exercises}/>
         <Route path="/nutrition" component={Nutrition}/>
         <Route path="/community" component={Community}/>

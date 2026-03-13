@@ -121,7 +121,7 @@ export default function ActiveWorkout() {
     toast.success("Workout Complete!", {
       description: "Great job logging your session."
     });
-    setLocation("/");
+    setLocation("/workout/summary/1");
   };
 
   const swapExercise = (newExercise: Exercise) => {

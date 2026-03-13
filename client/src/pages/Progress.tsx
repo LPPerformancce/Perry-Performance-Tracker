@@ -1,8 +1,8 @@
-import { ArrowLeft, TrendingUp, Calendar as CalendarIcon, Activity, Flame, Ruler } from "lucide-react";
+import { ArrowLeft, TrendingUp, Calendar as CalendarIcon, Activity, Flame, Ruler, Target } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
 
 const volumeData = [
   { name: 'Week 1', volume: 12000 },
@@ -11,6 +11,25 @@ const volumeData = [
   { name: 'Week 4', volume: 16200 },
   { name: 'Week 5', volume: 18000 },
   { name: 'Week 6', volume: 19500 },
+];
+
+const bodyPartVolume = [
+  { subject: 'Chest', volume: 120, fullMark: 150 },
+  { subject: 'Back', volume: 98, fullMark: 150 },
+  { subject: 'Shoulders', volume: 86, fullMark: 150 },
+  { subject: 'Quads', volume: 99, fullMark: 150 },
+  { subject: 'Hamstrings', volume: 85, fullMark: 150 },
+  { subject: 'Core', volume: 65, fullMark: 150 },
+];
+
+const weeklySets = [
+  { name: 'Mon', sets: 18 },
+  { name: 'Tue', sets: 0 },
+  { name: 'Wed', sets: 22 },
+  { name: 'Thu', sets: 0 },
+  { name: 'Fri', sets: 16 },
+  { name: 'Sat', sets: 0 },
+  { name: 'Sun', sets: 0 },
 ];
 
 const consistencyData = [
@@ -101,9 +120,9 @@ export default function Progress() {
           <CardContent className="p-4">
             <div className="flex justify-between items-center mb-4">
               <span className="text-sm font-medium">This Week</span>
-              <span className="text-sm font-bold text-emerald-600">4/4 Sessions</span>
+              <span className="text-sm font-bold text-emerald-600">3/4 Sessions</span>
             </div>
-            <div className="flex justify-between gap-2">
+            <div className="flex justify-between gap-2 mb-6">
               {consistencyData.map((d, i) => (
                 <div key={i} className="flex flex-col items-center gap-2">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${d.done ? 'bg-emerald-500 text-white shadow-sm' : 'bg-secondary text-muted-foreground'}`}>
@@ -112,6 +131,45 @@ export default function Progress() {
                 </div>
               ))}
             </div>
+            
+            <div className="h-[120px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={weeklySets}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} dy={10} />
+                  <Tooltip 
+                    cursor={{ fill: 'hsl(var(--secondary))' }}
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }}
+                    itemStyle={{ color: 'hsl(var(--primary))', fontWeight: 600 }}
+                  />
+                  <Bar dataKey="sets" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="text-center text-xs text-muted-foreground mt-2">Total working sets per day</p>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-lg flex items-center gap-2">
+            <Target className="w-5 h-5 text-primary" /> Muscle Group Distribution
+          </h2>
+        </div>
+        <Card className="bg-card border-border shadow-sm">
+          <CardContent className="p-4">
+            <div className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={bodyPartVolume}>
+                  <PolarGrid stroke="hsl(var(--border))" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
+                  <PolarRadiusAxis angle={30} domain={[0, 150]} tick={false} axisLine={false} />
+                  <Radar name="Volume" dataKey="volume" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.4} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="text-center text-xs text-muted-foreground mt-2">Relative volume distribution across muscle groups this week.</p>
           </CardContent>
         </Card>
       </section>
