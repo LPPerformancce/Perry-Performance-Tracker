@@ -1,19 +1,49 @@
 import { useState } from "react";
-import { Search, Filter, Play, X, Video } from "lucide-react";
+import { Search, Filter, Play, X, Video, Plus, Edit2, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { exercisesDatabase, Exercise } from "@/lib/exercises";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function Exercises() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [exercises, setExercises] = useState(exercisesDatabase);
+
+  const [newExData, setNewExData] = useState({
+    name: "",
+    target: "Chest",
+    equipment: "Dumbbell",
+    description: ""
+  });
+
+  const handleCreateExercise = () => {
+    if (!newExData.name) return;
+    
+    const newEx: Exercise = {
+      id: `custom-${Date.now()}`,
+      name: newExData.name,
+      target: newExData.target,
+      equipment: newExData.equipment as any,
+      category: "Compound",
+      mechanic: "Push",
+      description: newExData.description,
+      imagePlaceholder: newExData.name.substring(0, 2).toUpperCase()
+    };
+    
+    setExercises([newEx, ...exercises]);
+    setShowCreateDialog(false);
+    setNewExData({ name: "", target: "Chest", equipment: "Dumbbell", description: "" });
+  };
 
   const bodyParts = ["All", "Chest", "Back", "Quads", "Hamstrings", "Shoulders", "Biceps", "Triceps", "Core"];
 
-  const filteredExercises = exercisesDatabase.filter(ex => {
+  const filteredExercises = exercises.filter(ex => {
     const matchesSearch = ex.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = activeFilter === "All" || ex.target.includes(activeFilter) || (activeFilter === "Quads" || activeFilter === "Hamstrings" ? ex.target.includes(activeFilter) : false);
     return matchesSearch && matchesFilter;
@@ -21,9 +51,76 @@ export default function Exercises() {
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in duration-300 pb-20">
-      <header className="py-2">
-        <h1 className="text-2xl font-display font-semibold text-primary">Exercise Library</h1>
-        <p className="text-sm text-muted-foreground mt-1">Browse and search movement mechanics</p>
+      <header className="py-2 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-semibold text-primary">Exercise Library</h1>
+          <p className="text-sm text-muted-foreground mt-1">Browse and search movement mechanics</p>
+        </div>
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8 gap-1">
+              <Plus className="w-4 h-4" /> Create
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md w-[95vw] rounded-xl p-5">
+            <DialogHeader className="mb-4">
+              <DialogTitle>Create Custom Exercise</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Exercise Name</Label>
+                <Input 
+                  placeholder="e.g. Deficit Reverse Lunge" 
+                  value={newExData.name}
+                  onChange={(e) => setNewExData({...newExData, name: e.target.value})}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Primary Target</Label>
+                  <select 
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                    value={newExData.target}
+                    onChange={(e) => setNewExData({...newExData, target: e.target.value})}
+                  >
+                    {bodyParts.filter(p => p !== "All").map(part => (
+                      <option key={part} value={part}>{part}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Equipment</Label>
+                  <select 
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                    value={newExData.equipment}
+                    onChange={(e) => setNewExData({...newExData, equipment: e.target.value})}
+                  >
+                    <option value="Bodyweight">Bodyweight</option>
+                    <option value="Dumbbell">Dumbbell</option>
+                    <option value="Barbell">Barbell</option>
+                    <option value="Machine">Machine</option>
+                    <option value="Cable">Cable</option>
+                    <option value="Kettlebell">Kettlebell</option>
+                    <option value="Bands">Bands</option>
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Notes & Instructions (Optional)</Label>
+                <Textarea 
+                  placeholder="Personal cues or setup instructions..." 
+                  className="resize-none" 
+                  rows={3}
+                  value={newExData.description}
+                  onChange={(e) => setNewExData({...newExData, description: e.target.value})}
+                />
+              </div>
+              <Button className="w-full mt-2 bg-primary text-primary-foreground" onClick={handleCreateExercise}>
+                Save Custom Exercise
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </header>
 
       <div className="flex gap-2">

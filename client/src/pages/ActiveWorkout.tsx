@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, Check, Timer, X, MoreHorizontal, Info, GripVertical, Plus, Play } from "lucide-react";
+import { ArrowLeft, Check, Timer, X, MoreHorizontal, Info, GripVertical, Plus, Play, History, Droplet, Moon, Apple } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { exercisesDatabase, Exercise } from "@/lib/exercises";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -18,6 +19,35 @@ export default function ActiveWorkout() {
   const [showExerciseLibrary, setShowExerciseLibrary] = useState(false);
   const [showVideoDemo, setShowVideoDemo] = useState<Exercise | null>(null);
   const [replacingExerciseIndex, setReplacingExerciseIndex] = useState<number | null>(null);
+  
+  // Timer State
+  const [timeElapsed, setTimeElapsed] = useState(0);
+  const [restTimer, setRestTimer] = useState<number | null>(null);
+  const defaultRestSeconds = 60;
+  
+  // Feedback State
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedbackNotes, setFeedbackNotes] = useState("");
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeElapsed(prev => prev + 1);
+      if (restTimer !== null && restTimer > 0) {
+        setRestTimer(prev => prev! - 1);
+      } else if (restTimer === 0) {
+        setRestTimer(null);
+        toast.info("Rest complete!", { description: "Time for your next set." });
+        // In a real app we'd play an audio sound here
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [restTimer]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
 
   // Generate an initial weight based on last session (mocking the "intelligent load recommendation")
   const suggestWeight = (baseWeight: string) => {
@@ -71,13 +101,23 @@ export default function ActiveWorkout() {
 
   const toggleSet = (exIndex: number, setIndex: number) => {
     const key = `${exIndex}-${setIndex}`;
+    const willBeCompleted = !completedSets[key];
+    
     setCompletedSets(prev => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: willBeCompleted
     }));
+
+    if (willBeCompleted) {
+      setRestTimer(defaultRestSeconds);
+    }
   };
 
   const finishWorkout = () => {
+    setShowFeedback(true);
+  };
+
+  const completeWorkoutWithFeedback = () => {
     toast.success("Workout Complete!", {
       description: "Great job logging your session."
     });
@@ -172,11 +212,17 @@ export default function ActiveWorkout() {
           <div>
             <h1 className="font-semibold text-primary">{workoutData.title}</h1>
             <div className="flex items-center text-xs text-muted-foreground gap-1">
-              <Timer className="w-3 h-3" /> 00:14:32 elapsed
+              <Timer className="w-3 h-3" /> {formatTime(timeElapsed)} elapsed
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          {restTimer !== null && restTimer > 0 && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-md text-xs font-semibold mr-1 animate-pulse">
+              <History className="w-3.5 h-3.5" />
+              {formatTime(restTimer)}
+            </div>
+          )}
           <Button 
             variant={isEditing ? "default" : "outline"} 
             size="sm" 
@@ -209,7 +255,20 @@ export default function ActiveWorkout() {
                   </div>
                 )}
                 <div>
-                  <h2 className="font-semibold text-lg text-primary">{exercise.name}</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-semibold text-lg text-primary">{exercise.name}</h2>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 text-primary hover:bg-primary/20 rounded-full"
+                      onClick={() => {
+                        const fullEx = exercisesDatabase.find(e => e.id === exercise.exerciseId);
+                        if (fullEx) setShowVideoDemo(fullEx);
+                      }}
+                    >
+                      <Play className="w-3 h-3 fill-current" />
+                    </Button>
+                  </div>
                   <p className="text-sm text-muted-foreground">{exercise.target}</p>
                 </div>
               </div>
@@ -243,6 +302,15 @@ export default function ActiveWorkout() {
                       className="cursor-pointer gap-2"
                     >
                       <Play className="w-4 h-4 text-primary" /> View Demonstration
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        // In a real app, this would query a backend for alternative exercises using different equipment
+                        toast.info("Showing alternative setup...", { description: "Searching for DB/Bodyweight variations." });
+                      }}
+                      className="cursor-pointer gap-2"
+                    >
+                      <History className="w-4 h-4 text-muted-foreground" /> Equipment Alternative
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-border" />
                     <DropdownMenuItem 
@@ -459,6 +527,60 @@ export default function ActiveWorkout() {
                 {showVideoDemo?.description}
               </p>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showFeedback} onOpenChange={setShowFeedback}>
+        <DialogContent className="max-w-md w-[95vw] rounded-xl p-5">
+          <DialogHeader className="mb-2">
+            <DialogTitle className="text-center text-xl font-display text-primary">Session Complete</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div className="flex justify-center">
+              <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center border-4 border-primary/30">
+                <Check className="w-10 h-10 text-primary" />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3 text-center">
+              <div className="bg-secondary/50 rounded-lg p-3">
+                <div className="text-2xl font-display font-bold text-foreground">{formatTime(timeElapsed)}</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Duration</div>
+              </div>
+              <div className="bg-secondary/50 rounded-lg p-3">
+                <div className="text-2xl font-display font-bold text-foreground">8.2k</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Volume (lbs)</div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold">How did it feel?</label>
+              <div className="flex gap-2 justify-between">
+                {['Easy', 'Good', 'Hard', 'Brutal'].map((rating) => (
+                  <Button key={rating} variant="outline" className="flex-1 border-border shadow-sm bg-card hover:border-primary/50 text-xs h-9">
+                    {rating}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold">Coach Notes (Optional)</label>
+              <Textarea 
+                placeholder="Any pain? Form breakdowns? Let Coach Lee know..."
+                className="resize-none bg-card"
+                rows={3}
+                value={feedbackNotes}
+                onChange={(e) => setFeedbackNotes(e.target.value)}
+              />
+            </div>
+
+            <Button 
+              className="w-full h-12 text-md font-medium shadow-sm bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={completeWorkoutWithFeedback}
+            >
+              Save Session & View Recovery
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
