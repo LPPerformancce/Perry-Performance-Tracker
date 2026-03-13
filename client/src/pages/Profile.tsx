@@ -1,7 +1,8 @@
-import { Settings, Award, Ruler, Share2, Activity, Link as LinkIcon, ChevronRight, Camera, Watch, LayoutDashboard, Calendar as CalendarIcon } from "lucide-react";
+import { Settings, Award, Ruler, Share2, Activity, Link as LinkIcon, ChevronRight, Camera, Watch, LayoutDashboard, Calendar as CalendarIcon, Shield } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 
 export default function Profile() {
   return (
@@ -96,6 +97,24 @@ export default function Profile() {
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="mt-6 space-y-3">
+        <h3 className="font-semibold text-lg text-foreground">Privacy & Social</h3>
+        <Card className="border-border shadow-sm">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 border border-border">
+                <Shield className="w-5 h-5 text-muted-foreground" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-sm">Share Activity</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">Let friends see your sessions and PRs</p>
+              </div>
+            </div>
+            <Switch defaultChecked />
           </CardContent>
         </Card>
       </section>
