@@ -13,6 +13,7 @@ export function BottomNav() {
   const navItems = [
     { href: "/", icon: Home, label: "Home" },
     { href: "/workout", icon: Dumbbell, label: "Workout" },
+    { href: "/exercises", icon: List, label: "Library" },
     { href: "/nutrition", icon: Utensils, label: "Nutrition" },
     { href: "/community", icon: Users, label: "Community" },
     { href: "/profile", icon: User, label: "Profile" },
@@ -20,7 +21,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border pb-safe shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.5)]">
-      <div className="flex items-center justify-around h-16 px-1 max-w-md mx-auto">
+      <div className="flex items-center justify-around h-16 px-1 max-w-md mx-auto overflow-x-auto scrollbar-none gap-2">
         {navItems.map((item) => {
           const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
           const Icon = item.icon;

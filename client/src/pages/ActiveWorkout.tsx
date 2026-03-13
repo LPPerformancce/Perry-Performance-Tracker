@@ -363,7 +363,8 @@ export default function ActiveWorkout() {
                     onClick={() => !isCompleted && setActiveSet({ exercise: exIndex, set: setIndex })}
                   >
                     <div className="text-center font-medium text-muted-foreground">
-                      {setIndex + 1}
+                      <div className="text-xs">{setIndex + 1}</div>
+                      <div className="text-[9px] text-muted-foreground/70 mt-0.5">Prev: {set.previousWeight}</div>
                     </div>
                     <div>
                       <Input 
@@ -457,7 +458,7 @@ export default function ActiveWorkout() {
         <DialogContent className="max-w-md w-[95vw] h-[80vh] flex flex-col p-0 gap-0 rounded-xl overflow-hidden">
           <DialogHeader className="p-4 border-b border-border bg-background flex-shrink-0">
             <DialogTitle>
-              {replacingExerciseIndex !== null ? "Swap Exercise" : "Add Exercise"}
+              {replacingExerciseIndex !== null ? `Swap Exercise (Showing ${workoutData.exercises[replacingExerciseIndex].target} alternatives)` : "Add Exercise"}
             </DialogTitle>
             <div className="pt-3">
               <Input placeholder="Search exercises..." className="bg-card" />
@@ -465,7 +466,9 @@ export default function ActiveWorkout() {
           </DialogHeader>
           
           <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-secondary/30">
-            {exercisesDatabase.map((ex) => (
+            {exercisesDatabase
+              .filter(ex => replacingExerciseIndex === null || workoutData.exercises[replacingExerciseIndex].target.includes(ex.target))
+              .map((ex) => (
               <Card 
                 key={ex.id} 
                 className="border-border shadow-sm hover:border-primary/50 cursor-pointer transition-colors"

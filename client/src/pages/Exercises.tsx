@@ -54,7 +54,7 @@ export default function Exercises() {
       <header className="py-2 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-semibold text-primary">Exercise Library</h1>
-          <p className="text-sm text-muted-foreground mt-1">Browse and search movement mechanics</p>
+          <p className="text-sm text-muted-foreground mt-1">Browse 100+ movement mechanics</p>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
