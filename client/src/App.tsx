@@ -20,6 +20,7 @@ import Profile from "@/pages/Profile";
 import Exercises from "@/pages/Exercises";
 import Progress from "@/pages/Progress";
 import Nutrition from "@/pages/Nutrition";
+import Calendar from "@/pages/Calendar";
 
 function Router() {
   return (
@@ -38,6 +39,7 @@ function Router() {
         <Route path="/progress" component={Progress}/>
         <Route path="/coach" component={CoachDashboard}/>
         <Route path="/profile" component={Profile}/>
+        <Route path="/calendar" component={Calendar}/>
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

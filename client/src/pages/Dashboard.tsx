@@ -21,7 +21,12 @@ export default function Dashboard() {
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Today's Protocol</h2>
-          <Button variant="ghost" size="sm" className="h-8 px-2 text-xs text-primary font-medium">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 px-2 text-xs text-primary font-medium"
+            onClick={() => setLocation('/calendar')}
+          >
             View Calendar <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
         </div>

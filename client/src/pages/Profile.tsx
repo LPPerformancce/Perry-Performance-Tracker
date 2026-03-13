@@ -1,4 +1,4 @@
-import { Settings, Award, Ruler, Share2, Activity, Link as LinkIcon, ChevronRight, Camera, Watch, LayoutDashboard } from "lucide-react";
+import { Settings, Award, Ruler, Share2, Activity, Link as LinkIcon, ChevronRight, Camera, Watch, LayoutDashboard, Calendar as CalendarIcon } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -75,6 +75,27 @@ export default function Profile() {
                 <div className="font-semibold text-sm">7h 12m</div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="mt-6 space-y-3">
+        <h3 className="font-semibold text-lg text-foreground">Schedule & Sync</h3>
+        <Card 
+          className="border-border shadow-sm hover:border-primary/30 transition-colors cursor-pointer bg-card"
+          onClick={() => window.location.href = '/calendar'}
+        >
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <CalendarIcon className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-sm">Workout Calendar</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">Manage schedule & sync to Google/Apple</p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </CardContent>
         </Card>
       </section>
