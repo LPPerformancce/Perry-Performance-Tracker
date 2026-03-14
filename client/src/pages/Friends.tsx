@@ -20,7 +20,9 @@ export default function Friends() {
           <h1 className="text-2xl font-display font-semibold text-primary">Friends</h1>
           <p className="text-sm text-muted-foreground">Train together, stay accountable</p>
         </div>
-        <Button variant="outline" size="sm" className="h-8 gap-1 border-primary/20 text-primary">
+        <Button variant="outline" size="sm" className="h-8 gap-1 border-primary/20 text-primary" onClick={() => {
+          import("sonner").then(m => m.toast.info("Add Friend", { description: "Opening contacts to invite friends." }));
+        }}>
           <UserPlus className="w-4 h-4" /> Add
         </Button>
       </header>
@@ -69,7 +71,9 @@ export default function Friends() {
                       )}
                       
                       <div className="mt-3 flex gap-2">
-                        <Button variant="secondary" size="sm" className="h-7 text-[10px] flex-1">High Five</Button>
+                        <Button variant="secondary" size="sm" className="h-7 text-[10px] flex-1" onClick={() => {
+                          import("sonner").then(m => m.toast.success("High Five Sent!", { description: `You hyped up ${friend.name}.` }));
+                        }}>High Five</Button>
                         
                         {friend.shared ? (
                           <Dialog>
@@ -195,7 +199,9 @@ export default function Friends() {
                  <p className="text-xs text-muted-foreground">Shared by Michael Chen</p>
                </div>
              </div>
-             <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">Preview</Button>
+             <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={() => {
+               import("sonner").then(m => m.toast.info("Program Preview", { description: "Loading program details..." }));
+             }}>Preview</Button>
           </CardContent>
         </Card>
       </section>

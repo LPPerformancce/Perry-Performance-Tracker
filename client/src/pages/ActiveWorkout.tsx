@@ -114,6 +114,15 @@ export default function ActiveWorkout() {
   };
 
   const finishWorkout = () => {
+    const totalSets = workoutData.exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
+    const completedSetsCount = Object.values(completedSets).filter(Boolean).length;
+    
+    if (completedSetsCount < totalSets) {
+      if (!window.confirm(`You still have ${totalSets - completedSetsCount} sets remaining. Are you sure you want to finish the session?`)) {
+        return;
+      }
+    }
+    
     setShowFeedback(true);
   };
 
@@ -181,13 +190,29 @@ export default function ActiveWorkout() {
   };
 
   const removeSet = (exIndex: number) => {
-    const newExercises = [...workoutData.exercises];
-    if (newExercises[exIndex].sets.length > 1) {
-      newExercises[exIndex].sets.pop();
-      setWorkoutData({ ...workoutData, exercises: newExercises });
-    } else {
-      toast.error("Cannot remove the last set");
+    if (window.confirm("Are you sure you want to remove this set?")) {
+      const newExercises = [...workoutData.exercises];
+      if (newExercises[exIndex].sets.length > 1) {
+        newExercises[exIndex].sets.pop();
+        setWorkoutData({ ...workoutData, exercises: newExercises });
+      } else {
+        toast.error("Cannot remove the last set");
+      }
     }
+  };
+
+  const addSet = (exIndex: number) => {
+    const newExercises = [...workoutData.exercises];
+    const lastSet = newExercises[exIndex].sets[newExercises[exIndex].sets.length - 1];
+    newExercises[exIndex].sets.push({
+      ...lastSet,
+      weight: lastSet.weight || "0",
+      reps: lastSet.reps || "10",
+      rpe: lastSet.rpe || "7",
+      previousWeight: lastSet.previousWeight || "0"
+    });
+    setWorkoutData({ ...workoutData, exercises: newExercises });
+    toast.success("Set added");
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {

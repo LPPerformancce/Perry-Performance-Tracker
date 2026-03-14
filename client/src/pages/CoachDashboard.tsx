@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, FileText, Plus, Search, Settings, GripVertical, Play, Edit3, Trash2, Video, UploadCloud, Utensils, Camera } from "lucide-react";
+import { Users, FileText, Plus, Search, Settings, GripVertical, Play, Edit3, Trash2, Video, UploadCloud, Utensils, Camera, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { exercisesDatabase, Exercise } from "@/lib/exercises";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 export default function CoachDashboard() {
   const [activeTab, setActiveTab] = useState<"clients" | "programs" | "library" | "nutrition" | "builder">("programs");
@@ -70,7 +71,7 @@ export default function CoachDashboard() {
         <section className="space-y-4 animate-in slide-in-from-right-4 duration-300">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-lg">Client Management</h2>
-            <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
+            <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => toast.info("Invite dialog", { description: "Coming soon: Generate invite links for new clients." })}>
               <Plus className="w-3.5 h-3.5" /> Invite
             </Button>
           </div>
@@ -105,10 +106,10 @@ export default function CoachDashboard() {
                   <div className="text-right flex flex-col items-end">
                     <div className="text-xs text-muted-foreground mb-1">Active {client.lastActive}</div>
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="icon" className="h-6 w-6 bg-secondary text-secondary-foreground">
+                      <Button variant="ghost" size="icon" className="h-6 w-6 bg-secondary text-secondary-foreground" onClick={(e) => { e.stopPropagation(); toast.info("Form check request", { description: "Prompting client for form video." }); }}>
                         <Camera className="w-3 h-3" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] bg-secondary text-secondary-foreground">
+                      <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] bg-secondary text-secondary-foreground" onClick={(e) => { e.stopPropagation(); toast.info("Client Management", { description: `Opening profile for ${client.name}` }); }}>
                         Manage
                       </Button>
                     </div>
@@ -145,7 +146,7 @@ export default function CoachDashboard() {
                   <div className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">
                     14 Clients Assigned
                   </div>
-                  <Button variant="ghost" size="sm" className="h-7 text-xs">Assign</Button>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); toast.success("Assignment Modal Opened"); }}>Assign</Button>
                 </div>
               </CardContent>
             </Card>
@@ -165,7 +166,7 @@ export default function CoachDashboard() {
                   <div className="text-xs font-medium text-emerald-700 bg-emerald-100 px-2 py-1 rounded">
                     8 Clients Assigned
                   </div>
-                  <Button variant="ghost" size="sm" className="h-7 text-xs">Assign</Button>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); toast.success("Assignment Modal Opened"); }}>Assign</Button>
                 </div>
               </CardContent>
             </Card>
@@ -177,7 +178,7 @@ export default function CoachDashboard() {
         <section className="space-y-4 animate-in slide-in-from-right-4 duration-300">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-lg">Exercise Media</h2>
-            <Button size="sm" className="h-8 text-xs gap-1 bg-primary text-primary-foreground">
+            <Button size="sm" className="h-8 text-xs gap-1 bg-primary text-primary-foreground" onClick={() => toast.info("Upload Media", { description: "Opening device file picker..." })}>
               <Plus className="w-3.5 h-3.5" /> Add New
             </Button>
           </div>
@@ -240,7 +241,7 @@ export default function CoachDashboard() {
         <section className="space-y-4 animate-in slide-in-from-right-4 duration-300">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-lg">Nutrition Resources</h2>
-            <Button size="sm" className="h-8 text-xs gap-1 bg-primary text-primary-foreground">
+            <Button size="sm" className="h-8 text-xs gap-1 bg-primary text-primary-foreground" onClick={() => toast.info("Nutrition Builder", { description: "Opening macro template creator..." })}>
               <Plus className="w-3.5 h-3.5" /> New Plan
             </Button>
           </div>
@@ -292,7 +293,11 @@ export default function CoachDashboard() {
               className="font-semibold text-base border-transparent bg-transparent hover:bg-secondary focus-visible:ring-1 focus-visible:bg-background px-2"
             />
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="h-8" onClick={() => setActiveTab("programs")}>Cancel</Button>
+              <Button variant="outline" size="sm" className="h-8" onClick={() => {
+                if (window.confirm("Discard unsaved changes?")) {
+                  setActiveTab("programs");
+                }
+              }}>Cancel</Button>
               <Button size="sm" className="h-8 bg-primary text-primary-foreground" onClick={() => setActiveTab("programs")}>Save</Button>
             </div>
           </div>
@@ -303,10 +308,21 @@ export default function CoachDashboard() {
                 <div className="bg-secondary/50 p-3 border-b border-border flex items-center justify-between">
                   <Input 
                     value={day.name}
+                    onChange={(e) => {
+                      const newDays = [...programDays];
+                      newDays[dayIndex].name = e.target.value;
+                      setProgramDays(newDays);
+                    }}
                     className="font-medium text-sm h-8 w-auto border-transparent bg-transparent hover:bg-background/50 focus-visible:ring-1"
                   />
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground"><Trash2 className="w-4 h-4"/></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" onClick={() => {
+                      if (window.confirm("Are you sure you want to delete this entire training day?")) {
+                        const newDays = [...programDays];
+                        newDays.splice(dayIndex, 1);
+                        setProgramDays(newDays);
+                      }
+                    }}><Trash2 className="w-4 h-4"/></Button>
                   </div>
                 </div>
                 
@@ -358,7 +374,10 @@ export default function CoachDashboard() {
               </Card>
             ))}
 
-            <Button variant="outline" className="w-full bg-card h-12 shadow-sm gap-2 text-muted-foreground hover:text-foreground">
+            <Button variant="outline" className="w-full bg-card h-12 shadow-sm gap-2 text-muted-foreground hover:text-foreground" onClick={() => {
+              const newId = programDays.length > 0 ? Math.max(...programDays.map(d => d.id)) + 1 : 1;
+              setProgramDays([...programDays, { id: newId, name: `Day ${newId}: New Focus`, exercises: [] }]);
+            }}>
               <Plus className="w-5 h-5" /> Add Training Day
             </Button>
           </div>

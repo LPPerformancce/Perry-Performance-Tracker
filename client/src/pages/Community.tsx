@@ -58,11 +58,15 @@ export default function Community() {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <Button variant="outline" className="h-12 bg-card border-border shadow-sm text-foreground flex items-center gap-2 justify-start px-4">
+        <Button variant="outline" className="h-12 bg-card border-border shadow-sm text-foreground flex items-center gap-2 justify-start px-4" onClick={() => {
+          import("sonner").then(m => m.toast.info("Share Photo", { description: "Opening camera roll..." }));
+        }}>
           <Camera className="w-4 h-4 text-primary" />
           <span className="font-medium text-xs">Share Photo</span>
         </Button>
-        <Button variant="outline" className="h-12 bg-card border-border shadow-sm text-foreground flex items-center gap-2 justify-start px-4">
+        <Button variant="outline" className="h-12 bg-card border-border shadow-sm text-foreground flex items-center gap-2 justify-start px-4" onClick={() => {
+          import("sonner").then(m => m.toast.info("Share Recipe", { description: "Opening recipe builder..." }));
+        }}>
           <ChefHat className="w-4 h-4 text-primary" />
           <span className="font-medium text-xs">Share Recipe</span>
         </Button>
@@ -95,13 +99,19 @@ export default function Community() {
             </div>
           </CardContent>
           <CardFooter className="p-3 border-t border-border flex gap-4">
-            <Button variant="ghost" size="sm" className="text-muted-foreground h-8 px-2">
+            <Button variant="ghost" size="sm" className="text-muted-foreground h-8 px-2" onClick={() => {
+              import("sonner").then(m => m.toast.success("Liked post!"));
+            }}>
               <Heart className="w-4 h-4 mr-1.5" /> 12
             </Button>
-            <Button variant="ghost" size="sm" className="text-muted-foreground h-8 px-2">
+            <Button variant="ghost" size="sm" className="text-muted-foreground h-8 px-2" onClick={() => {
+              import("sonner").then(m => m.toast.info("Comments", { description: "Opening comments..." }));
+            }}>
               <MessageSquare className="w-4 h-4 mr-1.5" /> 4
             </Button>
-            <Button variant="ghost" size="sm" className="text-muted-foreground h-8 px-2 ml-auto">
+            <Button variant="ghost" size="sm" className="text-muted-foreground h-8 px-2 ml-auto" onClick={() => {
+              import("sonner").then(m => m.toast.info("Share Options", { description: "Opening share menu..." }));
+            }}>
               <Share2 className="w-4 h-4" />
             </Button>
           </CardFooter>
@@ -126,10 +136,14 @@ export default function Community() {
             </p>
           </CardContent>
           <CardFooter className="p-3 border-t border-border flex gap-4">
-            <Button variant="ghost" size="sm" className="text-primary font-medium h-8 px-2">
+            <Button variant="ghost" size="sm" className="text-primary font-medium h-8 px-2" onClick={() => {
+              import("sonner").then(m => m.toast.success("Liked post!"));
+            }}>
               <Heart className="w-4 h-4 mr-1.5 fill-current" /> 24
             </Button>
-            <Button variant="ghost" size="sm" className="text-muted-foreground h-8 px-2">
+            <Button variant="ghost" size="sm" className="text-muted-foreground h-8 px-2" onClick={() => {
+              import("sonner").then(m => m.toast.info("Comments", { description: "Opening comments..." }));
+            }}>
               <MessageSquare className="w-4 h-4 mr-1.5" /> 8
             </Button>
           </CardFooter>
