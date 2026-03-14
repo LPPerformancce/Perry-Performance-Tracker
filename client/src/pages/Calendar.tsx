@@ -134,11 +134,11 @@ export default function Calendar() {
                   </div>
                   <div className="flex items-center justify-between pt-3 border-t border-border">
                     {workout.synced ? (
-                      <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded flex items-center gap-1">
+                      <span className="text-[10px] font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded flex items-center gap-1">
                         <Monitor className="w-3 h-3" /> Synced to Personal Calendar
                       </span>
                     ) : (
-                      <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded flex items-center gap-1">
+                      <span className="text-[10px] font-medium text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded flex items-center gap-1">
                         <Smartphone className="w-3 h-3" /> App Only
                       </span>
                     )}
@@ -164,24 +164,28 @@ export default function Calendar() {
         )}
       </div>
 
-      {/* Sync Settings */}
       <section className="space-y-3 pt-4 border-t border-border/50">
-        <h3 className="font-semibold text-lg text-foreground">Calendar Connections</h3>
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-lg text-foreground">Calendar Sync</h3>
+          <span className="text-[10px] font-medium text-muted-foreground bg-secondary px-2 py-0.5 rounded">Demo Mode</span>
+        </div>
         <Card className="border-border shadow-sm">
           <CardContent className="p-0">
             <div className="p-4 flex items-center justify-between border-b border-border">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0 border border-blue-100">
-                  <Monitor className="w-5 h-5 text-blue-600" />
+                <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 border border-border">
+                  <Monitor className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <div>
                   <h4 className="font-semibold text-sm">Google Calendar</h4>
-                  <p className="text-xs text-emerald-600 font-medium mt-0.5">Connected (user@example.com)</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" /> Not available in web demo
+                  </p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="text-xs h-8">
-                Manage
-              </Button>
+              <span className="text-[10px] font-medium text-muted-foreground bg-secondary px-2 py-1 rounded">
+                Not available
+              </span>
             </div>
             <div className="p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -190,15 +194,20 @@ export default function Calendar() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-sm">Apple Calendar</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">Not connected</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" /> Not available in web demo
+                  </p>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="text-xs h-8">
-                Connect
-              </Button>
+              <span className="text-[10px] font-medium text-muted-foreground bg-secondary px-2 py-1 rounded">
+                Not available
+              </span>
             </div>
           </CardContent>
         </Card>
+        <p className="text-[10px] text-muted-foreground/60 text-center">
+          Calendar sync requires native device APIs. Available in the mobile release.
+        </p>
       </section>
     </div>
   );

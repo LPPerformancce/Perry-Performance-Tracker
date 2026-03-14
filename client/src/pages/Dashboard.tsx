@@ -5,6 +5,7 @@ import { useLocation } from "wouter";
 import { useCurrentUser } from "@/lib/userContext";
 import { useQuery } from "@tanstack/react-query";
 import type { WorkoutSession } from "@shared/schema";
+import { LPLogo } from "@/components/ui/LPLogo";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
@@ -55,9 +56,12 @@ export default function Dashboard() {
   return (
     <div className="p-4 space-y-6 animate-in fade-in duration-500 pb-20">
       <header className="py-2 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-display font-semibold text-primary" data-testid="text-app-title">Lee Perry</h1>
-          <p className="text-sm text-muted-foreground font-medium tracking-wide">PERFORMANCE</p>
+        <div className="flex items-center gap-3">
+          <LPLogo size="sm" />
+          <div>
+            <h1 className="text-xl font-display font-bold tracking-tight text-primary" data-testid="text-app-title">LP Performance</h1>
+            <p className="text-[10px] text-muted-foreground font-semibold tracking-[0.2em] uppercase">Strength for Professionals</p>
+          </div>
         </div>
         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/50 shadow-sm cursor-pointer" onClick={() => setLocation('/profile')} data-testid="link-profile-avatar">
           <span className="font-display font-semibold text-primary">{currentUser?.avatarInitials || "?"}</span>
@@ -78,7 +82,7 @@ export default function Dashboard() {
           </Button>
         </div>
         
-        <Card className="bg-white border-border shadow-md relative overflow-hidden">
+        <Card className="bg-card border-border shadow-md relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -mr-10 -mt-10" />
           <CardContent className="p-5">
             <div className="flex justify-between items-start mb-4">

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useCurrentUser } from "@/lib/userContext";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { LPLogo } from "@/components/ui/LPLogo";
 
 export default function Profile() {
   const { theme, setTheme } = useTheme();
@@ -24,7 +25,10 @@ export default function Profile() {
   return (
     <div className="p-4 space-y-6 animate-in fade-in duration-300 pb-20">
       <header className="py-2 flex items-center justify-between">
-        <h1 className="text-2xl font-display font-semibold text-primary">Profile</h1>
+        <div className="flex items-center gap-2.5">
+          <LPLogo size="xs" />
+          <h1 className="text-2xl font-display font-bold tracking-tight text-primary">Profile</h1>
+        </div>
         <Button variant="ghost" size="icon" className="text-muted-foreground">
           <Settings className="w-5 h-5" />
         </Button>
@@ -80,45 +84,7 @@ export default function Profile() {
       </section>
 
       <section className="mt-6 space-y-3">
-        <h3 className="font-semibold text-lg text-foreground">Device Sync</h3>
-        <Card className="border-border shadow-sm hover:border-primary/30 transition-colors cursor-pointer bg-gradient-to-r from-card to-secondary/30">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 border border-blue-500/20">
-                  <Watch className="w-5 h-5 text-blue-500" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sm">Fitness Tracker</h4>
-                  <p className="text-xs text-emerald-500 font-medium flex items-center mt-0.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 inline-block" /> Synced Today, 9:42 AM
-                  </p>
-                </div>
-              </div>
-              <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => toast.info("Device Management", { description: "Opening fitness tracker settings..." })}>
-                Manage
-              </Button>
-            </div>
-            <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border/50">
-              <div className="text-center">
-                <div className="text-xs text-muted-foreground mb-0.5">Steps</div>
-                <div className="font-semibold text-sm">8,432</div>
-              </div>
-              <div className="text-center border-x border-border/50">
-                <div className="text-xs text-muted-foreground mb-0.5">Active Cal</div>
-                <div className="font-semibold text-sm">450</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs text-muted-foreground mb-0.5">Sleep</div>
-                <div className="font-semibold text-sm">7h 12m</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="mt-6 space-y-3">
-        <h3 className="font-semibold text-lg text-foreground">Schedule & Sync</h3>
+        <h3 className="font-semibold text-lg text-foreground">Schedule</h3>
         <Card className="border-border shadow-sm hover:border-primary/30 transition-colors cursor-pointer bg-card">
           <Link href="/calendar">
             <CardContent className="p-4 flex items-center justify-between">
@@ -128,7 +94,7 @@ export default function Profile() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-sm">Workout Calendar</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">Manage schedule & sync to Google/Apple</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">View and manage your training schedule</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -187,23 +153,37 @@ export default function Profile() {
       </section>
 
       <section className="mt-6 space-y-3">
-        <h3 className="font-semibold text-lg text-foreground">Integrations</h3>
-        <Card className="border-border shadow-sm hover:border-primary/30 transition-colors cursor-pointer">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                <LayoutDashboard className="w-5 h-5 text-primary" />
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-lg text-foreground">Integrations</h3>
+          <span className="text-[10px] font-medium text-muted-foreground bg-secondary px-2 py-0.5 rounded">Demo Mode</span>
+        </div>
+        <Card className="border-border shadow-sm">
+          <CardContent className="p-0 divide-y divide-border">
+            {[
+              { name: "Apple Health / Google Fit", icon: Watch, desc: "Wearable & fitness tracker sync", status: "not_available" as const },
+              { name: "MyFitnessPal", icon: LayoutDashboard, desc: "Nutrition tracking integration", status: "not_available" as const },
+            ].map((integration, i) => (
+              <div key={i} className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 border border-border">
+                    <integration.icon className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-sm">{integration.name}</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">{integration.desc}</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-medium text-muted-foreground bg-secondary px-2 py-1 rounded flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" />
+                  Not available
+                </span>
               </div>
-              <div>
-                <h4 className="font-semibold text-sm">MyFitnessPal</h4>
-                <p className="text-xs text-muted-foreground mt-0.5">Connect for nutrition data</p>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => toast.info("Integration simulated", { description: "MyFitnessPal sync is a premium feature." })}>
-              Connect
-            </Button>
+            ))}
           </CardContent>
         </Card>
+        <p className="text-[10px] text-muted-foreground/60 text-center">
+          External integrations require native app APIs. These will be available in the mobile release.
+        </p>
       </section>
 
       <section className="mt-6 space-y-3">

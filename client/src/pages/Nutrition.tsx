@@ -1,8 +1,9 @@
-import { Search, Flame, Droplet, Coffee, ChefHat, Plus } from "lucide-react";
+import { Search, Flame, Droplet, Coffee, ChefHat, Plus, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Link } from "wouter";
 
 export default function Nutrition() {
   return (
@@ -70,15 +71,21 @@ export default function Nutrition() {
             import("sonner").then(m => m.toast.info("All Meal Plans", { description: "Opening library..." }));
           }}>View All</Button>
         </div>
-        <Card className="border-border shadow-sm border-l-4 border-l-primary cursor-pointer hover:bg-secondary/50 transition-colors">
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-foreground">LP High-Protein Lean Bulk</h3>
-            <p className="text-xs text-muted-foreground mt-1">4 meals/day • 2800 kcal • 180g Protein</p>
-            <div className="mt-3 flex gap-2">
-              <span className="bg-secondary text-secondary-foreground text-[10px] px-2 py-1 rounded">Preset by Coach</span>
-            </div>
-          </CardContent>
-        </Card>
+        <Link href="/meal-plan">
+          <Card className="border-border shadow-sm border-l-4 border-l-primary cursor-pointer hover:bg-secondary/50 transition-colors" data-testid="card-meal-plan">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-foreground">LP High-Protein Lean Bulk</h3>
+                <p className="text-xs text-muted-foreground mt-1">4 meals/day • ~2,800 kcal • ~180g Protein</p>
+                <div className="mt-3 flex gap-2">
+                  <span className="bg-secondary text-secondary-foreground text-[10px] px-2 py-1 rounded">Preset by Coach</span>
+                  <span className="bg-primary/10 text-primary text-[10px] px-2 py-1 rounded font-medium">7-Day Plan</span>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+            </CardContent>
+          </Card>
+        </Link>
       </section>
 
       {/* Recipe Ideas */}

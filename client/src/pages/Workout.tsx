@@ -16,7 +16,7 @@ export default function Workout() {
 
       <Button 
         onClick={() => setLocation('/workout/active/new')}
-        className="w-full h-14 text-sm font-semibold gap-2 bg-white text-primary border border-border shadow-sm hover:bg-secondary transition-colors"
+        className="w-full h-14 text-sm font-semibold gap-2 bg-card text-primary border border-border shadow-sm hover:bg-secondary transition-colors"
       >
         <Plus className="w-5 h-5" /> Start Empty Session
       </Button>

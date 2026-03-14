@@ -64,7 +64,7 @@ export default function Friends() {
                       <p className="text-sm text-muted-foreground">{friend.activity}</p>
                       
                       {friend.PRs > 0 && (
-                        <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded bg-yellow-50 text-xs font-medium text-yellow-800 border border-yellow-100">
+                        <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded bg-primary/10 text-xs font-medium text-primary border border-primary/20">
                           <Trophy className="w-3 h-3 text-yellow-600" />
                           Hit 1 new PR (Bench Press: 205 lbs)
                         </div>

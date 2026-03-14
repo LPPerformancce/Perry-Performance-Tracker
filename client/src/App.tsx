@@ -22,6 +22,7 @@ import Exercises from "@/pages/Exercises";
 import Progress from "@/pages/Progress";
 import Nutrition from "@/pages/Nutrition";
 import Calendar from "@/pages/Calendar";
+import MealPlan from "@/pages/MealPlan";
 
 function Router() {
   return (
@@ -42,6 +43,7 @@ function Router() {
         <Route path="/coach" component={CoachDashboard}/>
         <Route path="/profile" component={Profile}/>
         <Route path="/calendar" component={Calendar}/>
+        <Route path="/meal-plan" component={MealPlan}/>
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

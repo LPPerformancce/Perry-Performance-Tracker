@@ -75,7 +75,7 @@ export default function Challenges() {
                 </div>
                 <div className="text-right flex flex-col items-end">
                   {challenge.status === "completed" ? (
-                    <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md mb-1 flex items-center gap-1">
+                    <span className="text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md mb-1 flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3" /> Done
                     </span>
                   ) : (

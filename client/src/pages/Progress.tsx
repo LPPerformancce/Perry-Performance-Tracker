@@ -74,7 +74,7 @@ export default function Progress() {
       <div className="grid grid-cols-2 gap-3">
         <Card className="bg-card border-border shadow-sm">
           <CardContent className="p-4 flex flex-col items-center text-center gap-1">
-            <div className="w-10 h-10 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center mb-1">
+            <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-1">
               <Flame className="w-5 h-5" />
             </div>
             <div className="text-2xl font-display font-bold text-foreground">4 Weeks</div>
@@ -83,7 +83,7 @@ export default function Progress() {
         </Card>
         <Card className="bg-card border-border shadow-sm">
           <CardContent className="p-4 flex flex-col items-center text-center gap-1">
-            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-1">
+            <div className="w-10 h-10 rounded-full bg-secondary text-primary flex items-center justify-center mb-1">
               <TrendingUp className="w-5 h-5" />
             </div>
             <div className="text-2xl font-display font-bold text-foreground">12</div>

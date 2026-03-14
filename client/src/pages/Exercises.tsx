@@ -185,8 +185,9 @@ export default function Exercises() {
             <CardContent className="p-3 flex items-start gap-4">
               <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center border border-border shadow-inner text-primary/40 font-display font-bold text-xl flex-shrink-0 relative overflow-hidden group-hover:bg-primary/5 transition-colors">
                 {exercise.imagePlaceholder}
-                <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Play className="w-6 h-6 text-primary fill-primary/20" />
+                <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Play className="w-5 h-5 text-primary fill-primary/20" />
+                  <span className="text-[8px] font-bold text-primary uppercase tracking-wider mt-0.5">Demo</span>
                 </div>
               </div>
               <div className="flex-1 min-w-0 py-0.5">
@@ -253,7 +254,7 @@ export default function Exercises() {
             
             <div className="space-y-2 pt-2 border-t border-border">
               <h3 className="text-sm font-semibold text-foreground">Coach Notes</h3>
-              <div className="bg-blue-50/50 border border-blue-100 p-3 rounded-lg text-sm text-blue-900/80 italic">
+              <div className="bg-primary/5 border border-primary/20 p-3 rounded-lg text-sm text-muted-foreground italic">
                 "Keep the movement controlled. Don't rush the eccentric phase. If you feel this in your lower back, stop and check your form."
               </div>
             </div>

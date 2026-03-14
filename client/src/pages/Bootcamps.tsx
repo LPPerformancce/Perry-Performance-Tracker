@@ -27,24 +27,24 @@ export default function Bootcamps() {
 
         <Card className="border-border shadow-sm overflow-hidden border-t-4 border-t-emerald-500">
           <CardContent className="p-0">
-            <div className="p-5 bg-gradient-to-br from-emerald-50 to-teal-50/30">
+            <div className="p-5 bg-gradient-to-br from-emerald-500/10 to-transparent">
               <div className="flex justify-between items-start mb-2">
-                <h3 className="font-display font-bold text-xl text-emerald-950">Summer Prep '24</h3>
-                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Week 3 of 8</span>
+                <h3 className="font-display font-bold text-xl text-foreground">Summer Prep '24</h3>
+                <span className="bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Week 3 of 8</span>
               </div>
-              <p className="text-sm text-emerald-800/80 mb-4 leading-relaxed max-w-[90%]">
+              <p className="text-sm text-muted-foreground mb-4 leading-relaxed max-w-[90%]">
                 8-week intensive focusing on leaning out while maintaining the strength we built over winter.
               </p>
               
               <div className="space-y-2 mb-4">
-                <div className="flex justify-between text-xs font-medium text-emerald-900">
+                <div className="flex justify-between text-xs font-medium text-foreground">
                   <span>Your Progress</span>
                   <span>35%</span>
                 </div>
-                <Progress value={35} className="h-2 bg-emerald-200 [&>div]:bg-emerald-600" />
+                <Progress value={35} className="h-2 bg-emerald-500/20 [&>div]:bg-emerald-500" />
               </div>
 
-              <div className="flex items-center gap-4 text-xs font-medium text-emerald-800">
+              <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Users className="w-3.5 h-3.5" /> 42 Members
                 </span>
@@ -64,7 +64,7 @@ export default function Bootcamps() {
                    +38
                  </div>
               </div>
-              <Button size="sm" variant="outline" className="text-xs font-medium border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+              <Button size="sm" variant="outline" className="text-xs font-medium border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10">
                 View Details
               </Button>
             </div>
@@ -78,7 +78,7 @@ export default function Bootcamps() {
         <Card className="border-border shadow-sm">
           <CardContent className="p-5 flex flex-col gap-4">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
                 <Target className="w-6 h-6" />
               </div>
               <div>

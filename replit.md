@@ -13,6 +13,8 @@ Comprehensive strength training mobile app for desk-based professionals returnin
 - Black & gold premium aesthetic: `--primary: 45 90% 55%` (gold), `--background: 0 0% 5%` (near-black)
 - Dark mode default via ThemeProvider
 - Fonts: Plus Jakarta Sans (headings) + Inter (body)
+- LP monogram logo: `LPLogo` and `LPLogoMark` components in `client/src/components/ui/LPLogo.tsx`
+- All pages use opacity variants (e.g. `bg-primary/5`, `bg-emerald-500/10`) instead of hardcoded light-mode colors
 
 ## Database
 
@@ -38,10 +40,35 @@ Push schema: `npm run db:push`
 - `client/src/lib/userContext.tsx` - Current user context (defaults to James Davis, id=2)
 - `client/src/lib/queryClient.ts` - TanStack Query config + apiRequest helper
 - `client/src/App.tsx` - Router with all page routes
+- `client/src/components/ui/LPLogo.tsx` - LP monogram logo (sizes: xs/sm/md/lg/xl/watermark, variants: gold/white/muted)
 
 ## Pages
 
-Home(Dashboard) | Workout | ActiveWorkout | WorkoutSummary | Exercises | Nutrition | Community | Challenges | Bootcamps | Friends | Messages | Progress | Profile | CoachDashboard | Calendar
+Home(Dashboard) | Workout | ActiveWorkout | WorkoutSummary | Exercises | Nutrition | MealPlan | Community | Challenges | Bootcamps | Friends | Messages | Progress | Profile | CoachDashboard | Calendar
+
+## ActiveWorkout Features
+
+- Session-only exercise management (add/remove/swap) — programme is never modified
+- Superset linking via 3-dot menu (two-step: select first exercise, then link partner)
+- Add Set button below each exercise's final set
+- Swipe-left gestures to remove sets/exercises (80px threshold)
+- Undo toast with 5-second window after any deletion
+- Rest timer popup with progress bar, +30s/+60s/skip controls
+- Web Audio API beep alarm on rest timer completion
+- Exercise "Demo" button next to each exercise name
+
+## Meal Plan
+
+- Full 7-day meal plan page at `/meal-plan` with day selector
+- 4 meals per day with detailed items, macros, prep times
+- Meal logging checkboxes with daily progress tracking
+- Linked from Nutrition page's "Your Meal Plan" card
+
+## Integration Honesty
+
+- Profile and Calendar pages show integrations with honest statuses
+- "Demo Mode" badge on integration sections
+- External integrations (Apple Health, Google Fit, MyFitnessPal, calendar sync) marked "Not available" with explanation that native app APIs are required
 
 ## Users (Seeded)
 
