@@ -66,7 +66,9 @@ export default function Nutrition() {
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-lg">Your Meal Plan</h2>
-          <Button variant="ghost" size="sm" className="text-primary text-xs">View All</Button>
+          <Button variant="ghost" size="sm" className="text-primary text-xs" onClick={() => {
+            import("sonner").then(m => m.toast.info("All Meal Plans", { description: "Opening library..." }));
+          }}>View All</Button>
         </div>
         <Card className="border-border shadow-sm border-l-4 border-l-primary cursor-pointer hover:bg-secondary/50 transition-colors">
           <CardContent className="p-4">
@@ -83,7 +85,9 @@ export default function Nutrition() {
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-lg">Recipe Ideas</h2>
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => {
+            import("sonner").then(m => m.toast.info("Submit Recipe", { description: "Opening recipe builder..." }));
+          }}>
             <Plus className="w-3.5 h-3.5" /> Submit
           </Button>
         </div>

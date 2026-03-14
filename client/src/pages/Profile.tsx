@@ -1,12 +1,16 @@
 import { Settings, Award, Ruler, Share2, Activity, Link as LinkIcon, ChevronRight, Camera, Watch, LayoutDashboard, Calendar as CalendarIcon, Shield, Moon, Sun } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/components/ThemeProvider";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function Profile() {
   const { theme, setTheme } = useTheme();
+
+  const [shareActivity, setShareActivity] = useState(true);
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in duration-300 pb-20">
@@ -61,7 +65,7 @@ export default function Profile() {
                   </p>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" className="text-xs h-8">
+              <Button variant="ghost" size="sm" className="text-xs h-8" onClick={() => toast.info("Device Management", { description: "Opening fitness tracker settings..." })}>
                 Manage
               </Button>
             </div>
@@ -87,20 +91,21 @@ export default function Profile() {
         <h3 className="font-semibold text-lg text-foreground">Schedule & Sync</h3>
         <Card 
           className="border-border shadow-sm hover:border-primary/30 transition-colors cursor-pointer bg-card"
-          onClick={() => window.location.href = '/calendar'}
         >
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                <CalendarIcon className="w-5 h-5 text-primary" />
+          <Link href="/calendar">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                  <CalendarIcon className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm">Workout Calendar</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">Manage schedule & sync to Google/Apple</p>
+                </div>
               </div>
-              <div>
-                <h4 className="font-semibold text-sm">Workout Calendar</h4>
-                <p className="text-xs text-muted-foreground mt-0.5">Manage schedule & sync to Google/Apple</p>
-              </div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </CardContent>
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </CardContent>
+          </Link>
         </Card>
       </section>
 
@@ -138,7 +143,15 @@ export default function Profile() {
                 <p className="text-xs text-muted-foreground mt-0.5">Let friends see your sessions and PRs</p>
               </div>
             </div>
-            <Switch defaultChecked />
+            <Switch 
+              checked={shareActivity} 
+              onCheckedChange={(checked) => {
+                setShareActivity(checked);
+                toast.success(checked ? "Activity sharing enabled" : "Activity sharing disabled", {
+                  description: checked ? "Friends can now see your sessions." : "Your sessions are now private."
+                });
+              }} 
+            />
           </CardContent>
         </Card>
       </section>
@@ -156,7 +169,7 @@ export default function Profile() {
                 <p className="text-xs text-muted-foreground mt-0.5">Connect for nutrition data</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" className="text-xs h-8">
+            <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => toast.info("Integration simulated", { description: "MyFitnessPal sync is a premium feature." })}>
               Connect
             </Button>
           </CardContent>
@@ -169,7 +182,7 @@ export default function Profile() {
         </div>
         
         <div className="grid gap-3">
-          <Link href="/progress">
+          <Link href="/progress#photos">
             <Card className="bg-card border-border shadow-sm cursor-pointer hover:border-primary/30 transition-colors">
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -186,7 +199,7 @@ export default function Profile() {
             </Card>
           </Link>
 
-          <Link href="/progress">
+          <Link href="/progress#stats">
             <Card className="bg-card border-border shadow-sm cursor-pointer hover:border-primary/30 transition-colors">
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -203,7 +216,7 @@ export default function Profile() {
             </Card>
           </Link>
           
-          <Link href="/progress">
+          <Link href="/progress#measurements">
             <Card className="bg-card border-border shadow-sm cursor-pointer hover:border-primary/30 transition-colors">
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">

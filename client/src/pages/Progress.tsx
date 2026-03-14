@@ -1,5 +1,6 @@
 import { ArrowLeft, TrendingUp, Calendar as CalendarIcon, Activity, Flame, Ruler, Target } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
@@ -43,6 +44,19 @@ const consistencyData = [
 ];
 
 export default function Progress() {
+  useEffect(() => {
+    // Handle hash scrolling if present in the URL
+    if (window.location.hash) {
+      const id = window.location.hash.substring(1);
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 300); // Wait for animation to complete
+    }
+  }, []);
+
   return (
     <div className="p-4 space-y-6 animate-in fade-in duration-300 pb-20">
       <header className="py-2 flex items-center gap-3">
@@ -78,7 +92,7 @@ export default function Progress() {
         </Card>
       </div>
 
-      <section className="space-y-4">
+      <section className="space-y-4" id="stats">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-lg flex items-center gap-2">
             <Activity className="w-5 h-5 text-primary" /> Training Volume
@@ -174,23 +188,34 @@ export default function Progress() {
         </Card>
       </section>
 
-      <section className="space-y-4">
+      <section className="space-y-4" id="measurements">
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-lg flex items-center gap-2">
             <Ruler className="w-5 h-5 text-primary" /> Body Metrics
           </h2>
-          <Button variant="outline" size="sm" className="h-8 text-xs border-primary/20 text-primary">Log New</Button>
+          <Button variant="outline" size="sm" className="h-8 text-xs border-primary/20 text-primary" onClick={() => import("sonner").then(m => m.toast.info("Log Metrics", { description: "Opening measurement input form..." }))}>Log New</Button>
         </div>
         
         {/* Photo Progress */}
-        <Card className="border-border shadow-sm mb-4">
+        <Card className="border-border shadow-sm mb-4" id="photos">
           <CardContent className="p-4">
             <div className="flex justify-between items-center mb-3">
               <h3 className="font-medium text-sm">Recent Photos</h3>
               <span className="text-xs text-muted-foreground cursor-pointer hover:text-primary">Compare All</span>
             </div>
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-none">
-              <div className="w-24 h-32 rounded-lg bg-secondary border-2 border-dashed border-border flex flex-col items-center justify-center text-muted-foreground cursor-pointer hover:border-primary/50 hover:text-primary transition-colors flex-shrink-0">
+              <div className="w-24 h-32 rounded-lg bg-secondary border-2 border-dashed border-border flex flex-col items-center justify-center text-muted-foreground cursor-pointer hover:border-primary/50 hover:text-primary transition-colors flex-shrink-0 relative overflow-hidden">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10" 
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      import("sonner").then(m => m.toast.success("Photo uploaded!", { description: "Progress photo added to your timeline." }));
+                    }
+                  }}
+                  title="Upload progress photo"
+                />
                 <span className="text-xl mb-1">+</span>
                 <span className="text-[10px] font-medium">Add Photo</span>
               </div>
