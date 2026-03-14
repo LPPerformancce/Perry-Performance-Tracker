@@ -3,17 +3,23 @@ import { Search, Filter, Play, X, Video, Plus, Edit2, Info } from "lucide-react"
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { exercisesDatabase, Exercise } from "@/lib/exercises";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import type { Exercise } from "@shared/schema";
 
 export default function Exercises() {
+  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [exercises, setExercises] = useState(exercisesDatabase);
+
+  const { data: exercises = [] } = useQuery<Exercise[]>({
+    queryKey: ["/api/exercises"],
+  });
 
   const [newExData, setNewExData] = useState({
     name: "",
@@ -22,30 +28,37 @@ export default function Exercises() {
     description: ""
   });
 
+  const createExerciseMutation = useMutation({
+    mutationFn: async (data: typeof newExData) => {
+      const res = await apiRequest("POST", "/api/exercises", {
+        name: data.name,
+        target: data.target,
+        category: "Compound",
+        equipment: data.equipment,
+        mechanic: "Push",
+        description: data.description || "",
+        imagePlaceholder: data.name.substring(0, 2).toUpperCase(),
+        isCustom: true,
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/exercises"] });
+      setShowCreateDialog(false);
+      setNewExData({ name: "", target: "Chest", equipment: "Dumbbell", description: "" });
+    },
+  });
+
   const handleCreateExercise = () => {
     if (!newExData.name) return;
-    
-    const newEx: Exercise = {
-      id: `custom-${Date.now()}`,
-      name: newExData.name,
-      target: newExData.target,
-      equipment: newExData.equipment as any,
-      category: "Compound",
-      mechanic: "Push",
-      description: newExData.description,
-      imagePlaceholder: newExData.name.substring(0, 2).toUpperCase()
-    };
-    
-    setExercises([newEx, ...exercises]);
-    setShowCreateDialog(false);
-    setNewExData({ name: "", target: "Chest", equipment: "Dumbbell", description: "" });
+    createExerciseMutation.mutate(newExData);
   };
 
   const bodyParts = ["All", "Chest", "Back", "Quads", "Hamstrings", "Shoulders", "Biceps", "Triceps", "Core"];
 
   const filteredExercises = exercises.filter(ex => {
     const matchesSearch = ex.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = activeFilter === "All" || ex.target.includes(activeFilter) || (activeFilter === "Quads" || activeFilter === "Hamstrings" ? ex.target.includes(activeFilter) : false);
+    const matchesFilter = activeFilter === "All" || ex.target.includes(activeFilter);
     return matchesSearch && matchesFilter;
   });
 
@@ -54,11 +67,11 @@ export default function Exercises() {
       <header className="py-2 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-display font-semibold text-primary">Exercise Library</h1>
-          <p className="text-sm text-muted-foreground mt-1">Browse 100+ movement mechanics</p>
+          <p className="text-sm text-muted-foreground mt-1" data-testid="text-exercise-count">Browse {exercises.length}+ movement mechanics</p>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 gap-1">
+            <Button variant="outline" size="sm" className="h-8 gap-1" data-testid="button-create-exercise">
               <Plus className="w-4 h-4" /> Create
             </Button>
           </DialogTrigger>
@@ -73,6 +86,7 @@ export default function Exercises() {
                   placeholder="e.g. Deficit Reverse Lunge" 
                   value={newExData.name}
                   onChange={(e) => setNewExData({...newExData, name: e.target.value})}
+                  data-testid="input-exercise-name"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -82,6 +96,7 @@ export default function Exercises() {
                     className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                     value={newExData.target}
                     onChange={(e) => setNewExData({...newExData, target: e.target.value})}
+                    data-testid="select-exercise-target"
                   >
                     {bodyParts.filter(p => p !== "All").map(part => (
                       <option key={part} value={part}>{part}</option>
@@ -94,6 +109,7 @@ export default function Exercises() {
                     className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                     value={newExData.equipment}
                     onChange={(e) => setNewExData({...newExData, equipment: e.target.value})}
+                    data-testid="select-exercise-equipment"
                   >
                     <option value="Bodyweight">Bodyweight</option>
                     <option value="Dumbbell">Dumbbell</option>
@@ -113,9 +129,10 @@ export default function Exercises() {
                   rows={3}
                   value={newExData.description}
                   onChange={(e) => setNewExData({...newExData, description: e.target.value})}
+                  data-testid="input-exercise-description"
                 />
               </div>
-              <Button className="w-full mt-2 bg-primary text-primary-foreground" onClick={handleCreateExercise}>
+              <Button className="w-full mt-2 bg-primary text-primary-foreground" onClick={handleCreateExercise} data-testid="button-save-exercise">
                 Save Custom Exercise
               </Button>
             </div>
@@ -131,6 +148,7 @@ export default function Exercises() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9 bg-card border-border shadow-sm h-11 rounded-lg"
+            data-testid="input-search-exercises"
           />
         </div>
         <Button variant="outline" size="icon" className="h-11 w-11 border-border shadow-sm bg-card">
@@ -149,6 +167,7 @@ export default function Exercises() {
                 ? 'bg-primary text-primary-foreground border-primary shadow-sm' 
                 : 'bg-card border-border text-foreground hover:bg-secondary/80'
             }`}
+            data-testid={`filter-${part.toLowerCase()}`}
           >
             {part}
           </Button>
@@ -161,6 +180,7 @@ export default function Exercises() {
             key={exercise.id} 
             className="border-border shadow-sm hover:border-primary/30 transition-colors cursor-pointer group"
             onClick={() => setSelectedExercise(exercise)}
+            data-testid={`card-exercise-${exercise.id}`}
           >
             <CardContent className="p-3 flex items-start gap-4">
               <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center border border-border shadow-inner text-primary/40 font-display font-bold text-xl flex-shrink-0 relative overflow-hidden group-hover:bg-primary/5 transition-colors">
@@ -191,7 +211,6 @@ export default function Exercises() {
       <Dialog open={!!selectedExercise} onOpenChange={(open) => !open && setSelectedExercise(null)}>
         <DialogContent className="max-w-md w-[95vw] p-0 overflow-hidden rounded-xl border-border">
           <div className="relative aspect-video bg-black flex items-center justify-center">
-            {/* Mock video player showing the coach */}
             <img 
               src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=600&auto=format&fit=crop" 
               alt="Coach demonstrating exercise" 

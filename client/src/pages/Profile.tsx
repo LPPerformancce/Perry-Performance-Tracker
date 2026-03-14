@@ -4,13 +4,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/components/ThemeProvider";
-import { useState } from "react";
 import { toast } from "sonner";
+import { useCurrentUser } from "@/lib/userContext";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function Profile() {
   const { theme, setTheme } = useTheme();
+  const { currentUser, switchUser } = useCurrentUser();
 
-  const [shareActivity, setShareActivity] = useState(true);
+  const updateUserMutation = useMutation({
+    mutationFn: async (data: Record<string, any>) => {
+      if (!currentUser) return;
+      const res = await apiRequest("PATCH", `/api/users/${currentUser.id}`, data);
+      return res.json();
+    },
+  });
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in duration-300 pb-20">
@@ -23,16 +32,16 @@ export default function Profile() {
 
       <div className="flex items-center gap-5 relative z-10">
         <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center border-2 border-primary relative shadow-sm">
-          <span className="font-display font-semibold text-2xl text-primary">JD</span>
+          <span className="font-display font-semibold text-2xl text-primary" data-testid="text-user-initials">{currentUser?.avatarInitials || "?"}</span>
           <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-background">
             <Award className="w-3 h-3 text-primary-foreground" />
           </div>
         </div>
         <div>
-          <h2 className="font-display font-semibold text-xl text-foreground">James Davis</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">Foundation Program</p>
+          <h2 className="font-display font-semibold text-xl text-foreground" data-testid="text-user-name">{currentUser?.displayName || "Loading..."}</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">{currentUser?.program || "No Program"}</p>
           <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded bg-secondary text-xs font-medium text-secondary-foreground border border-border">
-            <Link href="/coach" className="flex items-center gap-1.5 hover:text-primary">
+            <Link href="/coach" className="flex items-center gap-1.5 hover:text-primary" data-testid="link-coach-portal">
               <span className="w-1.5 h-1.5 rounded-full bg-primary/50" />
               Coach Portal
             </Link>
@@ -41,13 +50,34 @@ export default function Profile() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 mt-6">
-        <Button variant="outline" className="h-10 bg-card border-border text-xs font-medium shadow-sm hover:border-primary/50">
+        <Button variant="outline" className="h-10 bg-card border-border text-xs font-medium shadow-sm hover:border-primary/50" data-testid="button-edit-profile">
           Edit Profile
         </Button>
         <Button variant="outline" className="h-10 bg-card border-border text-xs font-medium gap-2 shadow-sm hover:border-primary/50">
           <Share2 className="w-4 h-4" /> Share Stats
         </Button>
       </div>
+
+      <section className="mt-6 space-y-3">
+        <h3 className="font-semibold text-lg text-foreground">Switch User (Demo)</h3>
+        <div className="flex gap-2 flex-wrap">
+          {[
+            { id: 2, name: "James (User)", initials: "JD" },
+            { id: 1, name: "Coach Lee", initials: "LP" },
+          ].map(u => (
+            <Button
+              key={u.id}
+              variant={currentUser?.id === u.id ? "default" : "outline"}
+              size="sm"
+              className="text-xs"
+              onClick={() => switchUser(u.id)}
+              data-testid={`button-switch-user-${u.id}`}
+            >
+              {u.initials} - {u.name}
+            </Button>
+          ))}
+        </div>
+      </section>
 
       <section className="mt-6 space-y-3">
         <h3 className="font-semibold text-lg text-foreground">Device Sync</h3>
@@ -89,9 +119,7 @@ export default function Profile() {
 
       <section className="mt-6 space-y-3">
         <h3 className="font-semibold text-lg text-foreground">Schedule & Sync</h3>
-        <Card 
-          className="border-border shadow-sm hover:border-primary/30 transition-colors cursor-pointer bg-card"
-        >
+        <Card className="border-border shadow-sm hover:border-primary/30 transition-colors cursor-pointer bg-card">
           <Link href="/calendar">
             <CardContent className="p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -125,6 +153,7 @@ export default function Profile() {
             <Switch 
               checked={theme === 'dark'} 
               onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')} 
+              data-testid="switch-theme"
             />
           </CardContent>
         </Card>
@@ -144,13 +173,14 @@ export default function Profile() {
               </div>
             </div>
             <Switch 
-              checked={shareActivity} 
+              checked={currentUser?.shareActivity ?? true} 
               onCheckedChange={(checked) => {
-                setShareActivity(checked);
+                updateUserMutation.mutate({ shareActivity: checked });
                 toast.success(checked ? "Activity sharing enabled" : "Activity sharing disabled", {
                   description: checked ? "Friends can now see your sessions." : "Your sessions are now private."
                 });
               }} 
+              data-testid="switch-share-activity"
             />
           </CardContent>
         </Card>

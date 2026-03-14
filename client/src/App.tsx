@@ -49,15 +49,18 @@ function Router() {
 }
 
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { UserProvider } from "@/lib/userContext";
 
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <UserProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </UserProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

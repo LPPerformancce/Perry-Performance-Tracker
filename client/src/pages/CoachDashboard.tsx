@@ -5,26 +5,77 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { exercisesDatabase, Exercise } from "@/lib/exercises";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import type { Program, User, ClientAssignment, Exercise } from "@shared/schema";
 
 export default function CoachDashboard() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<"clients" | "programs" | "library" | "nutrition" | "builder">("programs");
 
-  
-  // Program Builder State
+  const { data: programs = [] } = useQuery<Program[]>({
+    queryKey: ["/api/programs"],
+  });
+
+  const { data: allUsers = [] } = useQuery<User[]>({
+    queryKey: ["/api/users"],
+  });
+
+  const { data: exercises = [] } = useQuery<Exercise[]>({
+    queryKey: ["/api/exercises"],
+  });
+
+  const { data: assignments = [] } = useQuery<ClientAssignment[]>({
+    queryKey: ["/api/client-assignments/coach/1"],
+  });
+
+  const clients = allUsers.filter(u => u.role === "user");
+
+  const getClientProgram = (clientId: number) => {
+    const assignment = assignments.find(a => a.clientId === clientId);
+    if (assignment?.programId) {
+      return programs.find(p => p.id === assignment.programId)?.title || "Unassigned";
+    }
+    return "Unassigned";
+  };
+
   const [programTitle, setProgramTitle] = useState("New Foundation Plan");
-  const [programDays, setProgramDays] = useState([
-    { id: 1, name: "Day 1: Upper Focus", exercises: [exercisesDatabase[0], exercisesDatabase[1], exercisesDatabase[6]] },
-    { id: 2, name: "Day 2: Lower Focus", exercises: [exercisesDatabase[10], exercisesDatabase[15], exercisesDatabase[25]] },
-  ]);
+  const [builderDays, setBuilderDays] = useState<{ id: number; name: string; exercises: Exercise[] }[]>([]);
+
+  const createProgramMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/programs", {
+        title: programTitle,
+        daysPerWeek: builderDays.length,
+        durationWeeks: 8,
+        coachId: 1,
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/programs"] });
+      toast.success("Program saved!");
+      setActiveTab("programs");
+    },
+  });
+
+  const startBuilder = (program?: Program) => {
+    if (program) {
+      setProgramTitle(program.title);
+    } else {
+      setProgramTitle("New Program");
+      setBuilderDays([]);
+    }
+    setActiveTab("builder");
+  };
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in duration-300 pb-20">
       <header className="py-2 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-semibold text-primary">Coach Portal</h1>
+          <h1 className="text-2xl font-display font-semibold text-primary" data-testid="text-coach-title">Coach Portal</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage clients and build programs</p>
         </div>
         <Button variant="ghost" size="icon" className="text-muted-foreground">
@@ -33,83 +84,56 @@ export default function CoachDashboard() {
       </header>
 
       <div className="flex gap-2 bg-secondary p-1 rounded-lg overflow-x-auto scrollbar-none">
-        <Button 
-          variant={activeTab === "clients" ? "default" : "ghost"} 
-          size="sm" 
-          className="flex-1 h-8 text-xs font-medium min-w-[80px]"
-          onClick={() => setActiveTab("clients")}
-        >
-          Clients
-        </Button>
-        <Button 
-          variant={activeTab === "programs" ? "default" : "ghost"} 
-          size="sm" 
-          className="flex-1 h-8 text-xs font-medium min-w-[80px]"
-          onClick={() => setActiveTab("programs")}
-        >
-          Programs
-        </Button>
-        <Button 
-          variant={activeTab === "library" ? "default" : "ghost"} 
-          size="sm" 
-          className="flex-1 h-8 text-xs font-medium min-w-[80px]"
-          onClick={() => setActiveTab("library")}
-        >
-          Media
-        </Button>
-        <Button 
-          variant={activeTab === "nutrition" ? "default" : "ghost"} 
-          size="sm" 
-          className="flex-1 h-8 text-xs font-medium min-w-[80px]"
-          onClick={() => setActiveTab("nutrition")}
-        >
-          Nutrition
-        </Button>
+        {(["clients", "programs", "library", "nutrition"] as const).map(tab => (
+          <Button 
+            key={tab}
+            variant={activeTab === tab ? "default" : "ghost"} 
+            size="sm" 
+            className="flex-1 h-8 text-xs font-medium min-w-[80px]"
+            onClick={() => setActiveTab(tab)}
+            data-testid={`tab-${tab}`}
+          >
+            {tab === "library" ? "Media" : tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </Button>
+        ))}
       </div>
 
       {activeTab === "clients" && (
         <section className="space-y-4 animate-in slide-in-from-right-4 duration-300">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-lg">Client Management</h2>
-            <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => toast.info("Invite dialog", { description: "Coming soon: Generate invite links for new clients." })}>
+            <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => toast.info("Invite dialog", { description: "Coming soon: Generate invite links for new clients." })} data-testid="button-invite-client">
               <Plus className="w-3.5 h-3.5" /> Invite
             </Button>
           </div>
 
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search clients..." 
-              className="pl-9 bg-card border-border shadow-sm h-10"
-            />
+            <Input placeholder="Search clients..." className="pl-9 bg-card border-border shadow-sm h-10" data-testid="input-search-clients" />
           </div>
 
           <div className="space-y-2">
-            {[
-              { name: "Sarah Jenkins", plan: "Foundation v2", lastActive: "Today", status: "good" },
-              { name: "Michael Chen", plan: "Summer Prep '24", lastActive: "Yesterday", status: "good" },
-              { name: "Emma Watson", plan: "Hypertrophy PPL", lastActive: "3 days ago", status: "warning" },
-            ].map((client, i) => (
-              <Card key={i} className="border-border shadow-sm hover:border-primary/30 transition-colors cursor-pointer">
+            {clients.map((client) => (
+              <Card key={client.id} className="border-border shadow-sm hover:border-primary/30 transition-colors cursor-pointer" data-testid={`card-client-${client.id}`}>
                 <CardContent className="p-3 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Avatar className="w-10 h-10 border border-border">
                       <AvatarFallback className="bg-secondary text-secondary-foreground text-xs font-medium">
-                        {client.name.split(' ').map(n => n[0]).join('')}
+                        {client.avatarInitials || client.displayName.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h4 className="font-medium text-sm text-foreground">{client.name}</h4>
-                      <p className="text-xs text-muted-foreground">{client.plan}</p>
+                      <h4 className="font-medium text-sm text-foreground">{client.displayName}</h4>
+                      <p className="text-xs text-muted-foreground">{getClientProgram(client.id)}</p>
                     </div>
                   </div>
                   <div className="text-right flex flex-col items-end">
-                    <div className="text-xs text-muted-foreground mb-1">Active {client.lastActive}</div>
+                    <div className="text-xs text-muted-foreground mb-1">Active</div>
                     <div className="flex gap-2">
                       <Button variant="ghost" size="icon" className="h-6 w-6 bg-secondary text-secondary-foreground" onClick={(e) => { e.stopPropagation(); toast.info("Form check request", { description: "Prompting client for form video." }); }}>
                         <Camera className="w-3 h-3" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] bg-secondary text-secondary-foreground" onClick={(e) => { e.stopPropagation(); toast.info("Client Management", { description: `Opening profile for ${client.name}` }); }}>
+                      <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] bg-secondary text-secondary-foreground" onClick={(e) => { e.stopPropagation(); toast.info("Client Management", { description: `Opening profile for ${client.displayName}` }); }}>
                         Manage
                       </Button>
                     </div>
@@ -125,51 +149,38 @@ export default function CoachDashboard() {
         <section className="space-y-4 animate-in slide-in-from-left-4 duration-300">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-lg">Program Library</h2>
-            <Button size="sm" className="h-8 text-xs gap-1 bg-primary text-primary-foreground" onClick={() => setActiveTab("builder")}>
+            <Button size="sm" className="h-8 text-xs gap-1 bg-primary text-primary-foreground" onClick={() => startBuilder()} data-testid="button-new-program">
               <Plus className="w-3.5 h-3.5" /> New Program
             </Button>
           </div>
 
           <div className="grid gap-3">
-            <Card className="border-border border-l-4 border-l-primary shadow-sm cursor-pointer hover:bg-secondary/20 transition-colors" onClick={() => setActiveTab("builder")}>
-              <CardContent className="p-4 flex flex-col gap-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold text-sm">Foundation for Professionals</h3>
-                    <p className="text-xs text-muted-foreground mt-1">3 days/week • 8 weeks</p>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><Edit3 className="w-4 h-4"/></Button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-border">
-                  <div className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">
-                    14 Clients Assigned
-                  </div>
-                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); toast.success("Assignment Modal Opened"); }}>Assign</Button>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-border border-l-4 border-l-emerald-500 shadow-sm cursor-pointer hover:bg-secondary/20 transition-colors">
-              <CardContent className="p-4 flex flex-col gap-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold text-sm">Desk-Worker Posture Fix</h3>
-                    <p className="text-xs text-muted-foreground mt-1">2 days/week • Mobility focus</p>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><Edit3 className="w-4 h-4"/></Button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-border">
-                  <div className="text-xs font-medium text-emerald-700 bg-emerald-100 px-2 py-1 rounded">
-                    8 Clients Assigned
-                  </div>
-                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); toast.success("Assignment Modal Opened"); }}>Assign</Button>
-                </div>
-              </CardContent>
-            </Card>
+            {programs.map((program, i) => {
+              const assignedCount = assignments.filter(a => a.programId === program.id).length;
+              const colors = ["primary", "emerald-500"];
+              const color = colors[i % colors.length];
+              return (
+                <Card key={program.id} className={`border-border border-l-4 border-l-${color} shadow-sm cursor-pointer hover:bg-secondary/20 transition-colors`} onClick={() => startBuilder(program)} data-testid={`card-program-${program.id}`}>
+                  <CardContent className="p-4 flex flex-col gap-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold text-sm">{program.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-1">{program.daysPerWeek} days/week &bull; {program.durationWeeks} weeks</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><Edit3 className="w-4 h-4"/></Button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-border">
+                      <div className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">
+                        {assignedCount} Client{assignedCount !== 1 ? "s" : ""} Assigned
+                      </div>
+                      <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); toast.success("Assignment Modal Opened"); }}>Assign</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </section>
       )}
@@ -178,7 +189,7 @@ export default function CoachDashboard() {
         <section className="space-y-4 animate-in slide-in-from-right-4 duration-300">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-lg">Exercise Media</h2>
-            <Button size="sm" className="h-8 text-xs gap-1 bg-primary text-primary-foreground" onClick={() => toast.info("Upload Media", { description: "Opening device file picker..." })}>
+            <Button size="sm" className="h-8 text-xs gap-1 bg-primary text-primary-foreground" onClick={() => toast.info("Upload Media", { description: "Opening device file picker..." })} data-testid="button-add-media">
               <Plus className="w-3.5 h-3.5" /> Add New
             </Button>
           </div>
@@ -187,20 +198,17 @@ export default function CoachDashboard() {
 
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search exercises to add video..." 
-              className="pl-9 bg-card border-border shadow-sm h-10"
-            />
+            <Input placeholder="Search exercises to add video..." className="pl-9 bg-card border-border shadow-sm h-10" />
           </div>
 
           <div className="space-y-3">
-            {exercisesDatabase.slice(0, 5).map((ex, i) => (
-              <Card key={ex.id} className="border-border shadow-sm overflow-hidden">
+            {exercises.slice(0, 5).map((ex, i) => (
+              <Card key={ex.id} className="border-border shadow-sm overflow-hidden" data-testid={`card-media-${ex.id}`}>
                 <CardContent className="p-0 flex items-stretch">
                   <div className="w-24 bg-secondary flex items-center justify-center relative group overflow-hidden">
                     {i < 2 ? (
                       <>
-                        <img src={`https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=200&auto=format&fit=crop`} className="w-full h-full object-cover opacity-60" alt="demo" />
+                        <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=200&auto=format&fit=crop" className="w-full h-full object-cover opacity-60" alt="demo" />
                         <div className="absolute inset-0 flex items-center justify-center">
                           <Play className="w-6 h-6 text-white" fill="white" />
                         </div>
@@ -217,7 +225,7 @@ export default function CoachDashboard() {
                   </div>
                   <div className="p-3 flex-1 flex flex-col justify-center">
                     <h4 className="font-semibold text-sm text-foreground">{ex.name}</h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">{ex.target} • {ex.equipment}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{ex.target} &bull; {ex.equipment}</p>
                     <div className="mt-2 flex items-center gap-2">
                       {i < 2 ? (
                         <span className="text-[10px] font-medium bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded flex items-center gap-1 border border-emerald-100">
@@ -241,7 +249,7 @@ export default function CoachDashboard() {
         <section className="space-y-4 animate-in slide-in-from-right-4 duration-300">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-lg">Nutrition Resources</h2>
-            <Button size="sm" className="h-8 text-xs gap-1 bg-primary text-primary-foreground" onClick={() => toast.info("Nutrition Builder", { description: "Opening macro template creator..." })}>
+            <Button size="sm" className="h-8 text-xs gap-1 bg-primary text-primary-foreground" onClick={() => toast.info("Nutrition Builder", { description: "Opening macro template creator..." })} data-testid="button-new-nutrition-plan">
               <Plus className="w-3.5 h-3.5" /> New Plan
             </Button>
           </div>
@@ -256,7 +264,7 @@ export default function CoachDashboard() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-sm">LP High-Protein Lean Bulk</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">Preset Meal Plan • 2800 kcal</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Preset Meal Plan &bull; 2800 kcal</p>
                     </div>
                   </div>
                   <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><Edit3 className="w-4 h-4"/></Button>
@@ -291,52 +299,53 @@ export default function CoachDashboard() {
               value={programTitle}
               onChange={(e) => setProgramTitle(e.target.value)}
               className="font-semibold text-base border-transparent bg-transparent hover:bg-secondary focus-visible:ring-1 focus-visible:bg-background px-2"
+              data-testid="input-program-title"
             />
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="h-8" onClick={() => {
                 if (window.confirm("Discard unsaved changes?")) {
                   setActiveTab("programs");
                 }
-              }}>Cancel</Button>
-              <Button size="sm" className="h-8 bg-primary text-primary-foreground" onClick={() => setActiveTab("programs")}>Save</Button>
+              }} data-testid="button-cancel-builder">Cancel</Button>
+              <Button size="sm" className="h-8 bg-primary text-primary-foreground" onClick={() => createProgramMutation.mutate()} data-testid="button-save-program">Save</Button>
             </div>
           </div>
 
           <div className="space-y-6">
-            {programDays.map((day, dayIndex) => (
+            {builderDays.map((day, dayIndex) => (
               <Card key={day.id} className="border-border shadow-sm overflow-hidden">
                 <div className="bg-secondary/50 p-3 border-b border-border flex items-center justify-between">
                   <Input 
                     value={day.name}
                     onChange={(e) => {
-                      const newDays = [...programDays];
+                      const newDays = [...builderDays];
                       newDays[dayIndex].name = e.target.value;
-                      setProgramDays(newDays);
+                      setBuilderDays(newDays);
                     }}
                     className="font-medium text-sm h-8 w-auto border-transparent bg-transparent hover:bg-background/50 focus-visible:ring-1"
                   />
                   <div className="flex items-center gap-1">
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" onClick={() => {
                       if (window.confirm("Are you sure you want to delete this entire training day?")) {
-                        const newDays = [...programDays];
+                        const newDays = [...builderDays];
                         newDays.splice(dayIndex, 1);
-                        setProgramDays(newDays);
+                        setBuilderDays(newDays);
                       }
                     }}><Trash2 className="w-4 h-4"/></Button>
                   </div>
                 </div>
                 
                 <div className="p-2 space-y-2">
-                  {day.exercises.map((ex, exIndex) => (
+                  {day.exercises.map((ex) => (
                     <div key={ex.id} className="flex items-center gap-2 p-2 bg-background border border-border rounded-md group">
                       <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-sm truncate">{ex.name}</h4>
                         <div className="flex gap-2 text-xs text-muted-foreground mt-0.5">
                           <span>3 sets</span>
-                          <span>•</span>
+                          <span>&bull;</span>
                           <span>8-12 reps</span>
-                          <span>•</span>
+                          <span>&bull;</span>
                           <span>RPE 7-8</span>
                         </div>
                       </div>
@@ -358,8 +367,12 @@ export default function CoachDashboard() {
                         <Input placeholder="Search exercises..." className="mt-2" />
                       </DialogHeader>
                       <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                        {exercisesDatabase.map((ex) => (
-                          <div key={ex.id} className="flex items-center justify-between p-3 border border-border rounded-lg hover:border-primary/50 cursor-pointer">
+                        {exercises.map((ex) => (
+                          <div key={ex.id} className="flex items-center justify-between p-3 border border-border rounded-lg hover:border-primary/50 cursor-pointer" onClick={() => {
+                            const newDays = [...builderDays];
+                            newDays[dayIndex].exercises.push(ex);
+                            setBuilderDays(newDays);
+                          }}>
                             <div>
                               <h4 className="font-semibold text-sm">{ex.name}</h4>
                               <p className="text-xs text-muted-foreground">{ex.target}</p>
@@ -375,9 +388,9 @@ export default function CoachDashboard() {
             ))}
 
             <Button variant="outline" className="w-full bg-card h-12 shadow-sm gap-2 text-muted-foreground hover:text-foreground" onClick={() => {
-              const newId = programDays.length > 0 ? Math.max(...programDays.map(d => d.id)) + 1 : 1;
-              setProgramDays([...programDays, { id: newId, name: `Day ${newId}: New Focus`, exercises: [] }]);
-            }}>
+              const newId = builderDays.length > 0 ? Math.max(...builderDays.map(d => d.id)) + 1 : 1;
+              setBuilderDays([...builderDays, { id: newId, name: `Day ${newId}: New Focus`, exercises: [] }]);
+            }} data-testid="button-add-training-day">
               <Plus className="w-5 h-5" /> Add Training Day
             </Button>
           </div>
