@@ -54,6 +54,7 @@ export default function MealScanner() {
   const { currentUser } = useCurrentUser();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: 0, role: "assistant", content: "Hi! I'm your LP nutrition assistant. Upload a photo of your meal and I'll estimate the macros, or ask me any nutrition question." }
@@ -261,9 +262,13 @@ export default function MealScanner() {
 
       <div className="sticky bottom-0 bg-background/95 backdrop-blur border-t border-border px-4 py-3">
         <div className="flex gap-2">
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-          <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0 border-primary/30 text-primary" onClick={() => fileInputRef.current?.click()} data-testid="button-upload-photo">
+          <input ref={fileInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleImageUpload} />
+          <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+          <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0 border-primary/30 text-primary" onClick={() => fileInputRef.current?.click()} data-testid="button-take-photo" title="Take Photo">
             <Camera className="w-5 h-5" />
+          </Button>
+          <Button variant="outline" size="icon" className="h-10 w-10 flex-shrink-0 border-border text-muted-foreground" onClick={() => galleryInputRef.current?.click()} data-testid="button-upload-photo" title="Choose from Gallery">
+            <Image className="w-5 h-5" />
           </Button>
           <Input
             value={inputText}
