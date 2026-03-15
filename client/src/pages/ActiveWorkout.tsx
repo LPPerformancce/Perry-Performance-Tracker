@@ -31,10 +31,36 @@ interface UndoAction {
   timeout: ReturnType<typeof setTimeout>;
 }
 
+type WorkoutPhase = "warmup" | "workout" | "cooldown" | "feedback";
+
+const WARMUP_EXERCISES = [
+  { name: "Arm Circles", duration: 30, description: "Forward and backward, gradually increasing range" },
+  { name: "Leg Swings", duration: 30, description: "Front-to-back and side-to-side each leg" },
+  { name: "Hip Circles", duration: 30, description: "Wide circles in both directions" },
+  { name: "Cat-Cow Stretches", duration: 45, description: "Flow between arching and rounding your spine" },
+  { name: "Band Pull-Aparts", duration: 30, description: "Squeeze shoulder blades together" },
+  { name: "Bodyweight Squats", duration: 45, description: "Slow controlled reps focusing on depth" },
+  { name: "Inchworms", duration: 45, description: "Walk hands out to plank, walk feet to hands" },
+];
+
+const COOLDOWN_EXERCISES = [
+  { name: "Standing Quad Stretch", duration: 30, description: "30 seconds each leg, hold at the wall for balance" },
+  { name: "Seated Hamstring Stretch", duration: 45, description: "Reach for your toes, keep back straight" },
+  { name: "Chest Doorway Stretch", duration: 30, description: "Arm against wall, lean forward gently" },
+  { name: "Child's Pose", duration: 45, description: "Knees wide, arms extended, breathe deeply" },
+  { name: "Cat-Cow Cooldown", duration: 30, description: "Slow, gentle spinal mobility" },
+  { name: "Deep Breathing", duration: 60, description: "4 count inhale, 7 count hold, 8 count exhale × 3" },
+];
+
 export default function ActiveWorkout() {
   const [, setLocation] = useLocation();
   const { currentUser } = useCurrentUser();
   const queryClient = useQueryClient();
+  const [phase, setPhase] = useState<WorkoutPhase>("warmup");
+  const [warmupIndex, setWarmupIndex] = useState(0);
+  const [warmupTimer, setWarmupTimer] = useState(WARMUP_EXERCISES[0].duration);
+  const [cooldownIndex, setCooldownIndex] = useState(0);
+  const [cooldownTimer, setCooldownTimer] = useState(COOLDOWN_EXERCISES[0].duration);
   const [activeSet, setActiveSet] = useState<{ exercise: number, set: number }>({ exercise: 0, set: 0 });
   const [completedSets, setCompletedSets] = useState<Record<string, boolean>>({});
   const [showExerciseLibrary, setShowExerciseLibrary] = useState(false);
@@ -409,6 +435,151 @@ export default function ActiveWorkout() {
            ex.target.toLowerCase().includes(exerciseSearchTerm.toLowerCase());
   });
 
+  useEffect(() => {
+    if (phase === "warmup" && warmupTimer > 0) {
+      const t = setInterval(() => setWarmupTimer(prev => prev - 1), 1000);
+      return () => clearInterval(t);
+    }
+    if (phase === "warmup" && warmupTimer === 0) {
+      if (warmupIndex < WARMUP_EXERCISES.length - 1) {
+        setWarmupIndex(prev => prev + 1);
+        setWarmupTimer(WARMUP_EXERCISES[warmupIndex + 1].duration);
+      }
+    }
+  }, [phase, warmupTimer, warmupIndex]);
+
+  useEffect(() => {
+    if (phase === "cooldown" && cooldownTimer > 0) {
+      const t = setInterval(() => setCooldownTimer(prev => prev - 1), 1000);
+      return () => clearInterval(t);
+    }
+    if (phase === "cooldown" && cooldownTimer === 0) {
+      if (cooldownIndex < COOLDOWN_EXERCISES.length - 1) {
+        setCooldownIndex(prev => prev + 1);
+        setCooldownTimer(COOLDOWN_EXERCISES[cooldownIndex + 1].duration);
+      }
+    }
+  }, [phase, cooldownTimer, cooldownIndex]);
+
+  const getAutoSuggestion = (exIndex: number, setIndex: number) => {
+    if (setIndex === 0) return null;
+    const prevKey = `${exIndex}-${setIndex - 1}`;
+    if (!completedSets[prevKey]) return null;
+    const prevSet = workoutData.exercises[exIndex].sets[setIndex - 1];
+    const prevRpe = parseInt(prevSet.rpe);
+    const prevWeight = parseInt(prevSet.weight);
+    if (isNaN(prevRpe) || isNaN(prevWeight)) return null;
+    if (prevRpe <= 6) return { weight: prevWeight + 5, note: "RPE was low — try adding 5 lbs" };
+    if (prevRpe >= 9) return { weight: Math.max(prevWeight - 5, 0), note: "RPE was high — consider dropping 5 lbs" };
+    return { weight: prevWeight, note: "Weight feels right — maintain" };
+  };
+
+  const renderWarmupPhase = () => (
+    <div className="min-h-screen bg-background flex flex-col animate-in fade-in duration-300">
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => setLocation("/workout")} className="h-8 w-8 text-muted-foreground" data-testid="button-close-warmup">
+            <X className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="font-display font-semibold text-primary">Warm-Up</h1>
+            <p className="text-xs text-muted-foreground">{warmupIndex + 1} of {WARMUP_EXERCISES.length} movements</p>
+          </div>
+        </div>
+        <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => setPhase("workout")} data-testid="button-skip-warmup">
+          Skip to Workout →
+        </Button>
+      </header>
+      <div className="flex-1 flex flex-col items-center justify-center p-6">
+        <div className="w-full max-w-sm text-center space-y-6">
+          <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto border-4 border-primary/40">
+            <Play className="w-8 h-8 text-primary ml-1" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-display font-bold text-foreground">{WARMUP_EXERCISES[warmupIndex].name}</h2>
+            <p className="text-sm text-muted-foreground mt-2">{WARMUP_EXERCISES[warmupIndex].description}</p>
+          </div>
+          <div className="text-5xl font-display font-bold text-primary tabular-nums">{formatTime(warmupTimer)}</div>
+          <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+            <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: `${(warmupTimer / WARMUP_EXERCISES[warmupIndex].duration) * 100}%` }} />
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" disabled={warmupIndex === 0} onClick={() => { setWarmupIndex(prev => prev - 1); setWarmupTimer(WARMUP_EXERCISES[warmupIndex - 1]?.duration || 30); }}>Previous</Button>
+            <Button className="flex-1 bg-primary text-primary-foreground" onClick={() => {
+              if (warmupIndex < WARMUP_EXERCISES.length - 1) {
+                setWarmupIndex(prev => prev + 1);
+                setWarmupTimer(WARMUP_EXERCISES[warmupIndex + 1].duration);
+              } else {
+                setPhase("workout");
+              }
+            }} data-testid="button-warmup-next">
+              {warmupIndex < WARMUP_EXERCISES.length - 1 ? "Next Movement" : "Start Workout"}
+            </Button>
+          </div>
+          <div className="flex gap-2 justify-center pt-2">
+            {WARMUP_EXERCISES.map((_, i) => (
+              <div key={i} className={`w-2 h-2 rounded-full transition-colors ${i <= warmupIndex ? 'bg-primary' : 'bg-secondary'}`} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderCooldownPhase = () => (
+    <div className="min-h-screen bg-background flex flex-col animate-in fade-in duration-300">
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-3">
+          <Moon className="w-5 h-5 text-primary" />
+          <div>
+            <h1 className="font-display font-semibold text-primary">Cool-Down</h1>
+            <p className="text-xs text-muted-foreground">{cooldownIndex + 1} of {COOLDOWN_EXERCISES.length} stretches</p>
+          </div>
+        </div>
+        <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => { setShowFeedback(true); setPhase("feedback"); }} data-testid="button-skip-cooldown">
+          Skip to Finish →
+        </Button>
+      </header>
+      <div className="flex-1 flex flex-col items-center justify-center p-6">
+        <div className="w-full max-w-sm text-center space-y-6">
+          <div className="w-20 h-20 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto border-4 border-blue-500/40">
+            <Droplet className="w-8 h-8 text-blue-400" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-display font-bold text-foreground">{COOLDOWN_EXERCISES[cooldownIndex].name}</h2>
+            <p className="text-sm text-muted-foreground mt-2">{COOLDOWN_EXERCISES[cooldownIndex].description}</p>
+          </div>
+          <div className="text-5xl font-display font-bold text-blue-400 tabular-nums">{formatTime(cooldownTimer)}</div>
+          <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+            <div className="h-full bg-blue-400 rounded-full transition-all duration-1000" style={{ width: `${(cooldownTimer / COOLDOWN_EXERCISES[cooldownIndex].duration) * 100}%` }} />
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" disabled={cooldownIndex === 0} onClick={() => { setCooldownIndex(prev => prev - 1); setCooldownTimer(COOLDOWN_EXERCISES[cooldownIndex - 1]?.duration || 30); }}>Previous</Button>
+            <Button className="flex-1 bg-blue-500 text-white hover:bg-blue-600" onClick={() => {
+              if (cooldownIndex < COOLDOWN_EXERCISES.length - 1) {
+                setCooldownIndex(prev => prev + 1);
+                setCooldownTimer(COOLDOWN_EXERCISES[cooldownIndex + 1].duration);
+              } else {
+                setShowFeedback(true);
+                setPhase("feedback");
+              }
+            }} data-testid="button-cooldown-next">
+              {cooldownIndex < COOLDOWN_EXERCISES.length - 1 ? "Next Stretch" : "Finish Session"}
+            </Button>
+          </div>
+          <div className="flex gap-2 justify-center pt-2">
+            {COOLDOWN_EXERCISES.map((_, i) => (
+              <div key={i} className={`w-2 h-2 rounded-full transition-colors ${i <= cooldownIndex ? 'bg-blue-400' : 'bg-secondary'}`} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (phase === "warmup") return renderWarmupPhase();
+  if (phase === "cooldown") return renderCooldownPhase();
+
   return (
     <div className="min-h-screen bg-background pb-20 animate-in fade-in duration-300">
       <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
@@ -449,7 +620,7 @@ export default function ActiveWorkout() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="default" size="sm" onClick={finishWorkout} className="font-medium bg-primary text-primary-foreground h-8" data-testid="button-finish-session">
+          <Button variant="default" size="sm" onClick={() => setPhase("cooldown")} className="font-medium bg-primary text-primary-foreground h-8" data-testid="button-finish-session">
             Finish
           </Button>
         </div>
@@ -540,9 +711,19 @@ export default function ActiveWorkout() {
                   {exercise.sets.map((set, setIndex) => {
                     const isCompleted = completedSets[`${exIndex}-${setIndex}`];
                     const isActive = activeSet.exercise === exIndex && activeSet.set === setIndex;
+                    const suggestion = getAutoSuggestion(exIndex, setIndex);
                     return (
+                      <div key={setIndex}>
+                        {suggestion && !isCompleted && isActive && (
+                          <div className="px-4 py-1.5 bg-primary/5 border-b border-primary/10 flex items-center gap-2">
+                            <Info className="w-3 h-3 text-primary flex-shrink-0" />
+                            <span className="text-[10px] text-primary/80 font-medium">{suggestion.note}</span>
+                            <Button variant="ghost" size="sm" className="h-5 text-[10px] text-primary px-2 ml-auto" onClick={() => updateSetValue(exIndex, setIndex, "weight", String(suggestion.weight))} data-testid={`button-apply-suggestion-${exIndex}-${setIndex}`}>
+                              Apply {suggestion.weight} lbs
+                            </Button>
+                          </div>
+                        )}
                       <div
-                        key={setIndex}
                         className={`grid grid-cols-[1fr_2fr_2fr_2fr_auto] gap-2 px-4 py-3 items-center border-b border-border/50 last:border-0 transition-all relative ${isCompleted ? 'bg-secondary/40' : isActive ? 'bg-primary/5' : ''}`}
                         onClick={() => !isCompleted && setActiveSet({ exercise: exIndex, set: setIndex })}
                         onTouchStart={(e) => handleSwipeStart(e, "set", exIndex, setIndex)}
@@ -591,6 +772,7 @@ export default function ActiveWorkout() {
                         >
                           <Check className="w-5 h-5" />
                         </Button>
+                      </div>
                       </div>
                     );
                   })}

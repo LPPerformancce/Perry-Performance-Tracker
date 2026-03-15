@@ -1,4 +1,4 @@
-import { Activity, TrendingUp, Calendar as CalendarIcon, ChevronRight, AlertCircle } from "lucide-react";
+import { Activity, TrendingUp, Calendar as CalendarIcon, ChevronRight, AlertCircle, Bell, Sparkles, Clock, Apple, History } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { WorkoutSession } from "@shared/schema";
 import { LPLogo } from "@/components/ui/LPLogo";
 import AnatomyBodyMap from "@/components/ui/AnatomyBodyMap";
+import { useState, useEffect } from "react";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
@@ -52,6 +53,32 @@ export default function Dashboard() {
     if (!s) return "";
     const m = Math.floor(s / 60);
     return `${m}m`;
+  };
+
+  const [dismissedTips, setDismissedTips] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("lpp-dismissed-tips") || "[]"); } catch { return []; }
+  });
+
+  const notifications = [
+    { id: "morning-stretch", icon: Clock, color: "text-blue-400", bgColor: "bg-blue-500/10 border-blue-500/30",
+      title: "Morning Mobility Reminder", description: "5 minutes of hip openers and thoracic rotations can undo 8 hours of desk damage. Try it before your coffee.", time: "8:00 AM" },
+    { id: "hydration", icon: Activity, color: "text-cyan-400", bgColor: "bg-cyan-500/10 border-cyan-500/30",
+      title: "Hydration Check", description: "You're 3 glasses behind your daily target. Dehydration reduces strength output by up to 25%.", time: "2:00 PM" },
+    { id: "workout-reminder", icon: Bell, color: "text-primary", bgColor: "bg-primary/10 border-primary/30",
+      title: "Workout Scheduled Today", description: "Foundation: Full Body is on the plan. Your best sessions happen when you start by 6 PM.", time: "4:00 PM" },
+  ].filter(n => !dismissedTips.includes(n.id));
+
+  const dailyTip = [
+    "Desk warriors: Set a 45-minute timer. Stand, do 10 bodyweight squats, sit back down. Your lower back will thank you.",
+    "Sleep is your #1 supplement. Aim for 7-9 hours — poor sleep can reduce testosterone by up to 15%.",
+    "Protein timing matters less than total daily intake. Hit your target across all meals, don't stress about the 'anabolic window'.",
+    "Walking 10 minutes after meals improves insulin sensitivity more than any supplement on the market.",
+  ][new Date().getDay() % 4];
+
+  const dismissTip = (id: string) => {
+    const updated = [...dismissedTips, id];
+    setDismissedTips(updated);
+    localStorage.setItem("lpp-dismissed-tips", JSON.stringify(updated));
   };
 
   return (
@@ -167,8 +194,52 @@ export default function Dashboard() {
         </Card>
       </section>
 
+      {notifications.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Bell className="w-4 h-4 text-primary" /> Reminders
+            </h2>
+            <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full font-medium">{notifications.length}</span>
+          </div>
+          {notifications.map(n => (
+            <Card key={n.id} className={`${n.bgColor} shadow-sm`} data-testid={`card-notification-${n.id}`}>
+              <CardContent className="p-4 flex items-start gap-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${n.color} bg-background/30 border border-white/10`}>
+                  <n.icon className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm text-foreground">{n.title}</h4>
+                    <button className="text-[10px] text-muted-foreground hover:text-foreground" onClick={() => dismissTip(n.id)}>✕</button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{n.description}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </section>
+      )}
+
+      <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 shadow-sm">
+        <CardContent className="p-4 flex items-start gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+            <Sparkles className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-xs text-primary uppercase tracking-wider">Coach's Daily Tip</h4>
+            <p className="text-sm text-foreground/80 mt-1">{dailyTip}</p>
+          </div>
+        </CardContent>
+      </Card>
+
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Recent Activity</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Recent Activity</h2>
+          <Button variant="ghost" size="sm" className="text-xs text-primary h-6 px-2" onClick={() => setLocation('/workout-history')} data-testid="link-workout-history">
+            <History className="w-3 h-3 mr-1" /> View All
+          </Button>
+        </div>
         <div className="space-y-3">
           <Card className="bg-amber-500/10 border-amber-500/30 shadow-sm cursor-pointer" onClick={() => setLocation('/nutrition')}>
             <CardContent className="p-4 flex items-start gap-4">
@@ -177,7 +248,7 @@ export default function Dashboard() {
               </div>
               <div className="flex-1">
                 <h4 className="font-semibold text-sm text-foreground">Nutrition Tracking Paused</h4>
-                <p className="text-xs text-muted-foreground mt-0.5">You haven't logged meals in 3 days. Your last successful tracking streak aligned with great workout performance. Tap to repeat your favorite meals.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">You haven't logged meals in 3 days. Tap to scan a meal or repeat your favourites.</p>
               </div>
             </CardContent>
           </Card>

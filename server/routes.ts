@@ -6,7 +6,8 @@ import {
   insertProgramDaySchema, insertProgramDayExerciseSchema,
   insertWorkoutSessionSchema, insertWorkoutSetSchema,
   insertBodyMetricSchema, insertCommunityPostSchema,
-  insertClientAssignmentSchema, insertFriendshipSchema
+  insertClientAssignmentSchema, insertFriendshipSchema,
+  insertUserProfileSchema, insertMealLogSchema
 } from "@shared/schema";
 
 export async function registerRoutes(
@@ -245,6 +246,39 @@ export async function registerRoutes(
     const friendship = await storage.updateFriendship(Number(req.params.id), req.body);
     if (!friendship) return res.status(404).json({ message: "Friendship not found" });
     res.json(friendship);
+  });
+
+  // ── User Profiles ──
+  app.get("/api/user-profiles/:userId", async (req, res) => {
+    const profile = await storage.getUserProfile(Number(req.params.userId));
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+    res.json(profile);
+  });
+
+  app.post("/api/user-profiles", async (req, res) => {
+    const parsed = insertUserProfileSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
+    const profile = await storage.createUserProfile(parsed.data);
+    res.status(201).json(profile);
+  });
+
+  app.patch("/api/user-profiles/:userId", async (req, res) => {
+    const profile = await storage.updateUserProfile(Number(req.params.userId), req.body);
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+    res.json(profile);
+  });
+
+  // ── Meal Logs ──
+  app.get("/api/meal-logs/user/:userId", async (req, res) => {
+    const logs = await storage.getMealLogs(Number(req.params.userId));
+    res.json(logs);
+  });
+
+  app.post("/api/meal-logs", async (req, res) => {
+    const parsed = insertMealLogSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
+    const log = await storage.createMealLog(parsed.data);
+    res.status(201).json(log);
   });
 
   return httpServer;

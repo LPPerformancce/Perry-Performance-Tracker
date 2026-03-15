@@ -115,6 +115,39 @@ export const friendships = pgTable("friendships", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const userProfiles = pgTable("user_profiles", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  fitnessGoal: text("fitness_goal"),
+  experienceLevel: text("experience_level"),
+  trainingFrequency: text("training_frequency"),
+  injuries: text("injuries"),
+  limitations: text("limitations"),
+  barriers: text("barriers"),
+  age: integer("age"),
+  height: text("height"),
+  weight: text("weight"),
+  targetWeight: text("target_weight"),
+  preferredWorkoutTime: text("preferred_workout_time"),
+  equipmentAccess: text("equipment_access"),
+  dietaryPreference: text("dietary_preference"),
+  onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const mealLogs = pgTable("meal_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  mealType: text("meal_type").notNull(),
+  description: text("description").notNull(),
+  calories: integer("calories"),
+  protein: integer("protein"),
+  carbs: integer("carbs"),
+  fats: integer("fats"),
+  imageUrl: text("image_url"),
+  loggedAt: timestamp("logged_at").defaultNow(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertExerciseSchema = createInsertSchema(exercises).omit({ id: true });
@@ -127,6 +160,8 @@ export const insertBodyMetricSchema = createInsertSchema(bodyMetrics).omit({ id:
 export const insertCommunityPostSchema = createInsertSchema(communityPosts).omit({ id: true, createdAt: true, likes: true, comments: true });
 export const insertClientAssignmentSchema = createInsertSchema(clientAssignments).omit({ id: true, assignedAt: true });
 export const insertFriendshipSchema = createInsertSchema(friendships).omit({ id: true, createdAt: true });
+export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({ id: true, createdAt: true });
+export const insertMealLogSchema = createInsertSchema(mealLogs).omit({ id: true, loggedAt: true });
 
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -151,3 +186,7 @@ export type ClientAssignment = typeof clientAssignments.$inferSelect;
 export type InsertClientAssignment = z.infer<typeof insertClientAssignmentSchema>;
 export type Friendship = typeof friendships.$inferSelect;
 export type InsertFriendship = z.infer<typeof insertFriendshipSchema>;
+export type UserProfile = typeof userProfiles.$inferSelect;
+export type InsertUserProfile = z.infer<typeof insertUserProfileSchema>;
+export type MealLog = typeof mealLogs.$inferSelect;
+export type InsertMealLog = z.infer<typeof insertMealLogSchema>;

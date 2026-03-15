@@ -1,17 +1,40 @@
-import { Search, Flame, Droplet, Coffee, ChefHat, Plus, ChevronRight } from "lucide-react";
+import { Search, Flame, Droplet, Coffee, ChefHat, Plus, ChevronRight, Camera, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function Nutrition() {
+  const [, setLocation] = useLocation();
   return (
     <div className="p-4 space-y-6 animate-in fade-in duration-300 pb-20">
-      <header className="py-2">
-        <h1 className="text-2xl font-display font-semibold text-primary">Nutrition</h1>
-        <p className="text-sm text-muted-foreground mt-1">Fuel your performance</p>
+      <header className="py-2 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-display font-semibold text-primary">Nutrition</h1>
+          <p className="text-sm text-muted-foreground mt-1">Fuel your performance</p>
+        </div>
+        <Button
+          className="bg-primary text-primary-foreground gap-1.5 shadow-md"
+          onClick={() => setLocation('/meal-scanner')}
+          data-testid="button-meal-scanner"
+        >
+          <Camera className="w-4 h-4" /> Scan Meal
+        </Button>
       </header>
+
+      <Card className="border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5 cursor-pointer hover:bg-primary/15 transition-colors" onClick={() => setLocation('/meal-scanner')} data-testid="card-ai-scanner">
+        <CardContent className="p-4 flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0 border border-primary/30">
+            <Sparkles className="w-6 h-6 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-sm text-foreground">AI Meal Scanner</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Snap a photo of your meal and get instant macro estimates + nutrition coaching</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-primary flex-shrink-0" />
+        </CardContent>
+      </Card>
 
       {/* Daily Macros Overview */}
       <Card className="border-primary/20 shadow-md overflow-hidden bg-gradient-to-br from-card to-background">

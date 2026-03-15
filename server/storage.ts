@@ -3,7 +3,7 @@ import { db } from "./db";
 import {
   users, exercises, programs, programDays, programDayExercises,
   workoutSessions, workoutSets, bodyMetrics, communityPosts,
-  clientAssignments, friendships,
+  clientAssignments, friendships, userProfiles, mealLogs,
   type InsertUser, type User,
   type InsertExercise, type Exercise,
   type InsertProgram, type Program,
@@ -15,6 +15,8 @@ import {
   type InsertCommunityPost, type CommunityPost,
   type InsertClientAssignment, type ClientAssignment,
   type InsertFriendship, type Friendship,
+  type InsertUserProfile, type UserProfile,
+  type InsertMealLog, type MealLog,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -78,6 +80,15 @@ export interface IStorage {
   getFriendships(userId: number): Promise<Friendship[]>;
   createFriendship(friendship: InsertFriendship): Promise<Friendship>;
   updateFriendship(id: number, data: Partial<InsertFriendship>): Promise<Friendship | undefined>;
+
+  // User Profiles
+  getUserProfile(userId: number): Promise<UserProfile | undefined>;
+  createUserProfile(profile: InsertUserProfile): Promise<UserProfile>;
+  updateUserProfile(userId: number, data: Partial<InsertUserProfile>): Promise<UserProfile | undefined>;
+
+  // Meal Logs
+  getMealLogs(userId: number): Promise<MealLog[]>;
+  createMealLog(log: InsertMealLog): Promise<MealLog>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -270,6 +281,31 @@ export class DatabaseStorage implements IStorage {
   async updateFriendship(id: number, data: Partial<InsertFriendship>): Promise<Friendship | undefined> {
     const [updated] = await db.update(friendships).set(data).where(eq(friendships.id, id)).returning();
     return updated;
+  }
+  // User Profiles
+  async getUserProfile(userId: number): Promise<UserProfile | undefined> {
+    const [profile] = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId));
+    return profile;
+  }
+
+  async createUserProfile(profile: InsertUserProfile): Promise<UserProfile> {
+    const [created] = await db.insert(userProfiles).values(profile).returning();
+    return created;
+  }
+
+  async updateUserProfile(userId: number, data: Partial<InsertUserProfile>): Promise<UserProfile | undefined> {
+    const [updated] = await db.update(userProfiles).set(data).where(eq(userProfiles.userId, userId)).returning();
+    return updated;
+  }
+
+  // Meal Logs
+  async getMealLogs(userId: number): Promise<MealLog[]> {
+    return db.select().from(mealLogs).where(eq(mealLogs.userId, userId)).orderBy(desc(mealLogs.loggedAt));
+  }
+
+  async createMealLog(log: InsertMealLog): Promise<MealLog> {
+    const [created] = await db.insert(mealLogs).values(log).returning();
+    return created;
   }
 }
 

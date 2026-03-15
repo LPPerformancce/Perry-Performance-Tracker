@@ -23,30 +23,48 @@ import Progress from "@/pages/Progress";
 import Nutrition from "@/pages/Nutrition";
 import Calendar from "@/pages/Calendar";
 import MealPlan from "@/pages/MealPlan";
+import Onboarding from "@/pages/Onboarding";
+import WorkoutHistory from "@/pages/WorkoutHistory";
+import MealScanner from "@/pages/MealScanner";
+
+function OnboardingGate({ children }: { children: React.ReactNode }) {
+  const onboardingComplete = localStorage.getItem("lpp-onboarding-complete") === "true";
+  if (!onboardingComplete) return <Onboarding />;
+  return <>{children}</>;
+}
 
 function Router() {
   return (
-    <AppLayout>
-      <Switch>
-        <Route path="/" component={Dashboard}/>
-        <Route path="/workout" component={Workout}/>
-        <Route path="/workout/active/:id" component={ActiveWorkout}/>
-        <Route path="/workout/summary/:id" component={WorkoutSummary}/>
-        <Route path="/exercises" component={Exercises}/>
-        <Route path="/nutrition" component={Nutrition}/>
-        <Route path="/community" component={Community}/>
-        <Route path="/messages" component={Messages}/>
-        <Route path="/challenges" component={Challenges}/>
-        <Route path="/bootcamps" component={Bootcamps}/>
-        <Route path="/friends" component={Friends}/>
-        <Route path="/progress" component={Progress}/>
-        <Route path="/coach" component={CoachDashboard}/>
-        <Route path="/profile" component={Profile}/>
-        <Route path="/calendar" component={Calendar}/>
-        <Route path="/meal-plan" component={MealPlan}/>
-        <Route component={NotFound} />
-      </Switch>
-    </AppLayout>
+    <Switch>
+      <Route path="/onboarding" component={Onboarding}/>
+      <Route>
+        <OnboardingGate>
+          <AppLayout>
+            <Switch>
+              <Route path="/" component={Dashboard}/>
+              <Route path="/workout" component={Workout}/>
+              <Route path="/workout/active/:id" component={ActiveWorkout}/>
+              <Route path="/workout/summary/:id" component={WorkoutSummary}/>
+              <Route path="/exercises" component={Exercises}/>
+              <Route path="/nutrition" component={Nutrition}/>
+              <Route path="/meal-scanner" component={MealScanner}/>
+              <Route path="/community" component={Community}/>
+              <Route path="/messages" component={Messages}/>
+              <Route path="/challenges" component={Challenges}/>
+              <Route path="/bootcamps" component={Bootcamps}/>
+              <Route path="/friends" component={Friends}/>
+              <Route path="/progress" component={Progress}/>
+              <Route path="/coach" component={CoachDashboard}/>
+              <Route path="/profile" component={Profile}/>
+              <Route path="/calendar" component={Calendar}/>
+              <Route path="/meal-plan" component={MealPlan}/>
+              <Route path="/workout-history" component={WorkoutHistory}/>
+              <Route component={NotFound} />
+            </Switch>
+          </AppLayout>
+        </OnboardingGate>
+      </Route>
+    </Switch>
   );
 }
 
