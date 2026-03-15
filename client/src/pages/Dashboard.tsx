@@ -6,6 +6,7 @@ import { useCurrentUser } from "@/lib/userContext";
 import { useQuery } from "@tanstack/react-query";
 import type { WorkoutSession } from "@shared/schema";
 import { LPLogo } from "@/components/ui/LPLogo";
+import AnatomyBodyMap from "@/components/ui/AnatomyBodyMap";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
@@ -132,53 +133,35 @@ export default function Dashboard() {
       </div>
 
       <section className="space-y-4">
-        <h2 className="text-lg font-semibold">Weekly Body Map</h2>
-        <Card className="bg-card border-border shadow-sm overflow-hidden relative">
-          <CardContent className="p-0">
-            <div className="flex h-48">
-              <div className="w-1/2 bg-secondary/50 p-4 flex flex-col justify-between border-r border-border">
-                <div>
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Trained</h3>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-2 py-1 rounded bg-primary/20 text-primary text-xs font-medium border border-primary/30">Chest</span>
-                    <span className="px-2 py-1 rounded bg-primary/20 text-primary text-xs font-medium border border-primary/30">Triceps</span>
-                    <span className="px-2 py-1 rounded bg-primary/20 text-primary text-xs font-medium border border-primary/30">Shoulders</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">Volume: {formatVolume(weekVolume || 8500)} lbs</div>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Weekly Body Map</h2>
+          <Button variant="link" size="sm" className="h-6 px-0 text-[10px] text-primary" onClick={() => setLocation('/workout')}>Target Fresh Muscles →</Button>
+        </div>
+        <Card className="bg-card border-border shadow-sm overflow-hidden">
+          <CardContent className="p-4">
+            <AnatomyBodyMap
+              trainedMuscles={["Chest", "Triceps", "Shoulders", "Core"]}
+            />
+            <div className="flex gap-4 mt-4 pt-3 border-t border-border/50">
+              <div className="flex-1">
+                <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Trained This Week</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {["Chest", "Triceps", "Shoulders", "Core"].map(m => (
+                    <span key={m} className="px-2 py-0.5 rounded bg-primary/20 text-primary text-[10px] font-medium border border-primary/30">{m}</span>
+                  ))}
                 </div>
               </div>
-              <div className="w-1/2 p-4 flex flex-col justify-between bg-card">
-                <div>
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Fresh</h3>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-2 py-1 rounded bg-secondary text-secondary-foreground text-xs font-medium border border-border">Back</span>
-                    <span className="px-2 py-1 rounded bg-secondary text-secondary-foreground text-xs font-medium border border-border">Biceps</span>
-                    <span className="px-2 py-1 rounded bg-secondary text-secondary-foreground text-xs font-medium border border-border">Quads</span>
-                    <span className="px-2 py-1 rounded bg-secondary text-secondary-foreground text-xs font-medium border border-border">Hamstrings</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <Button variant="link" size="sm" className="h-6 px-0 text-[10px] text-primary" onClick={() => setLocation('/workout')}>Target Fresh Muscles →</Button>
+              <div className="flex-1">
+                <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Fresh</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {["Back", "Biceps", "Quads", "Hamstrings", "Glutes"].map(m => (
+                    <span key={m} className="px-2 py-0.5 rounded bg-secondary text-secondary-foreground text-[10px] font-medium border border-border">{m}</span>
+                  ))}
                 </div>
               </div>
             </div>
-            <div className="absolute inset-0 pointer-events-none flex justify-center opacity-30 right-4 top-2 bottom-2">
-              <svg viewBox="0 0 200 400" className="h-full w-auto">
-                <path d="M100 20 C110 20 115 30 115 45 C115 60 108 70 100 70 C92 70 85 60 85 45 C85 30 90 20 100 20 Z" fill="none" stroke="currentColor" strokeWidth="2" />
-                <path d="M85 70 Q100 80 115 70 L145 80 C155 85 160 95 160 105 L165 160 L145 160 L140 105 C140 105 130 95 115 100 L115 180 C115 200 120 250 125 380 L105 380 L100 220 L95 380 L75 380 C80 250 85 200 85 180 L85 100 C70 95 60 105 60 105 L55 160 L35 160 L40 105 C40 95 45 85 55 80 Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
-                <path d="M85 85 C95 85 100 90 100 95 C100 90 105 85 115 85 C120 90 118 105 100 110 C82 105 80 90 85 85 Z" fill="var(--color-primary)" opacity="0.8" />
-                <path d="M65 80 C75 75 80 80 85 85 L75 105 C65 100 60 90 65 80 Z" fill="var(--color-primary)" opacity="0.8" />
-                <path d="M135 80 C125 75 120 80 115 85 L125 105 C135 100 140 90 135 80 Z" fill="var(--color-primary)" opacity="0.8" />
-                <path d="M58 105 L55 135 L68 135 L73 105 Z" fill="var(--color-primary)" opacity="0.8" />
-                <path d="M142 105 L145 135 L132 135 L127 105 Z" fill="var(--color-primary)" opacity="0.8" />
-                <path d="M92 115 L108 115 L108 130 L92 130 Z" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
-                <path d="M92 135 L108 135 L108 150 L92 150 Z" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
-                <path d="M92 155 L108 155 L108 170 L92 170 Z" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
-                <path d="M85 190 Q95 230 80 280 L95 280 Q100 230 100 190 Z" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
-                <path d="M115 190 Q105 230 120 280 L105 280 Q100 230 100 190 Z" fill="none" stroke="currentColor" strokeWidth="1" opacity="0.3"/>
-              </svg>
+            <div className="text-center mt-3">
+              <span className="text-[10px] text-muted-foreground">Volume: {formatVolume(weekVolume || 8500)} lbs this week</span>
             </div>
           </CardContent>
         </Card>
