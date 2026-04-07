@@ -1,86 +1,60 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
+import type { Server } from "http";
 import { storage } from "./storage";
-import {
-  insertUserSchema, insertExerciseSchema, insertProgramSchema,
-  insertProgramDaySchema, insertProgramDayExerciseSchema,
-  insertWorkoutSessionSchema, insertWorkoutSetSchema,
-  insertBodyMetricSchema, insertCommunityPostSchema,
-  insertClientAssignmentSchema, insertFriendshipSchema,
-  insertUserProfileSchema, insertMealLogSchema
-} from "@shared/schema";
+import { insertProgramSchema, insertProgramDaySchema, insertProgramDayExerciseSchema, insertWorkoutSessionSchema, insertWorkoutSetSchema, insertClientAssignmentSchema, insertNutritionPlanSchema, insertClientNutritionAssignmentSchema, insertCheckInSchema, insertMessageSchema } from "@shared/schema";
 
-export async function registerRoutes(
-  httpServer: Server,
-  app: Express
-): Promise<Server> {
-  // ── Users ──
+export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
   app.get("/api/users", async (_req, res) => {
-    const users = await storage.getAllUsers();
-    res.json(users.map(u => ({ ...u, password: undefined })));
+    const rows = await storage.getAllUsers();
+    res.json(rows.map(({ password, ...user }) => user));
   });
 
   app.get("/api/users/:id", async (req, res) => {
-    const user = await storage.getUser(Number(req.params.id));
-    if (!user) return res.status(404).json({ message: "User not found" });
-    res.json({ ...user, password: undefined });
+    const row = await storage.getUser(Number(req.params.id));
+    if (!row) return res.status(404).json({ message: "User not found" });
+    const { password, ...user } = row;
+    res.json(user);
   });
 
-  app.post("/api/users", async (req, res) => {
-    const parsed = insertUserSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    const user = await storage.createUser(parsed.data);
-    res.status(201).json({ ...user, password: undefined });
+  app.get("/api/user-profiles/:userId", async (req, res) => {
+    const row = await storage.getUserProfile(Number(req.params.userId));
+    if (!row) return res.status(404).json({ message: "Profile not found" });
+    res.json(row);
   });
 
-  app.patch("/api/users/:id", async (req, res) => {
-    const user = await storage.updateUser(Number(req.params.id), req.body);
-    if (!user) return res.status(404).json({ message: "User not found" });
-    res.json({ ...user, password: undefined });
+  app.patch("/api/user-profiles/:userId", async (req, res) => {
+    const row = await storage.upsertUserProfile(Number(req.params.userId), req.body);
+    res.json(row);
   });
 
-  // ── Exercises ──
   app.get("/api/exercises", async (_req, res) => {
-    const exercises = await storage.getExercises();
-    res.json(exercises);
+    res.json(await storage.getExercises());
   });
 
-  app.get("/api/exercises/:id", async (req, res) => {
-    const exercise = await storage.getExercise(Number(req.params.id));
-    if (!exercise) return res.status(404).json({ message: "Exercise not found" });
-    res.json(exercise);
-  });
-
-  app.post("/api/exercises", async (req, res) => {
-    const parsed = insertExerciseSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    const exercise = await storage.createExercise(parsed.data);
-    res.status(201).json(exercise);
-  });
-
-  // ── Programs ──
   app.get("/api/programs", async (_req, res) => {
-    const programs = await storage.getPrograms();
-    res.json(programs);
+    res.json(await storage.getPrograms());
+  });
+
+  app.get("/api/programs/coach/:coachId", async (req, res) => {
+    res.json(await storage.getProgramsByCoach(Number(req.params.coachId)));
   });
 
   app.get("/api/programs/:id", async (req, res) => {
-    const program = await storage.getProgram(Number(req.params.id));
-    if (!program) return res.status(404).json({ message: "Program not found" });
-    res.json(program);
+    const row = await storage.getProgram(Number(req.params.id));
+    if (!row) return res.status(404).json({ message: "Program not found" });
+    res.json(row);
   });
 
   app.post("/api/programs", async (req, res) => {
     const parsed = insertProgramSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    const program = await storage.createProgram(parsed.data);
-    res.status(201).json(program);
+    res.status(201).json(await storage.createProgram(parsed.data));
   });
 
   app.patch("/api/programs/:id", async (req, res) => {
-    const program = await storage.updateProgram(Number(req.params.id), req.body);
-    if (!program) return res.status(404).json({ message: "Program not found" });
-    res.json(program);
+    const row = await storage.updateProgram(Number(req.params.id), req.body);
+    if (!row) return res.status(404).json({ message: "Program not found" });
+    res.json(row);
   });
 
   app.delete("/api/programs/:id", async (req, res) => {
@@ -88,28 +62,20 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
-  app.get("/api/programs/coach/:coachId", async (req, res) => {
-    const programs = await storage.getProgramsByCoach(Number(req.params.coachId));
-    res.json(programs);
-  });
-
-  // ── Program Days ──
   app.get("/api/programs/:programId/days", async (req, res) => {
-    const days = await storage.getProgramDays(Number(req.params.programId));
-    res.json(days);
+    res.json(await storage.getProgramDays(Number(req.params.programId)));
   });
 
   app.post("/api/program-days", async (req, res) => {
     const parsed = insertProgramDaySchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    const day = await storage.createProgramDay(parsed.data);
-    res.status(201).json(day);
+    res.status(201).json(await storage.createProgramDay(parsed.data));
   });
 
   app.patch("/api/program-days/:id", async (req, res) => {
-    const day = await storage.updateProgramDay(Number(req.params.id), req.body);
-    if (!day) return res.status(404).json({ message: "Day not found" });
-    res.json(day);
+    const row = await storage.updateProgramDay(Number(req.params.id), req.body);
+    if (!row) return res.status(404).json({ message: "Program day not found" });
+    res.json(row);
   });
 
   app.delete("/api/program-days/:id", async (req, res) => {
@@ -117,17 +83,20 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
-  // ── Program Day Exercises ──
   app.get("/api/program-days/:dayId/exercises", async (req, res) => {
-    const exercises = await storage.getProgramDayExercises(Number(req.params.dayId));
-    res.json(exercises);
+    res.json(await storage.getProgramDayExercises(Number(req.params.dayId)));
   });
 
   app.post("/api/program-day-exercises", async (req, res) => {
     const parsed = insertProgramDayExerciseSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    const exercise = await storage.createProgramDayExercise(parsed.data);
-    res.status(201).json(exercise);
+    res.status(201).json(await storage.createProgramDayExercise(parsed.data));
+  });
+
+  app.patch("/api/program-day-exercises/:id", async (req, res) => {
+    const row = await storage.updateProgramDayExercise(Number(req.params.id), req.body);
+    if (!row) return res.status(404).json({ message: "Program exercise not found" });
+    res.json(row);
   });
 
   app.delete("/api/program-day-exercises/:id", async (req, res) => {
@@ -135,150 +104,112 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
-  // ── Workout Sessions ──
-  app.get("/api/workout-sessions/user/:userId", async (req, res) => {
-    const sessions = await storage.getWorkoutSessions(Number(req.params.userId));
-    res.json(sessions);
-  });
-
-  app.get("/api/workout-sessions/:id", async (req, res) => {
-    const session = await storage.getWorkoutSession(Number(req.params.id));
-    if (!session) return res.status(404).json({ message: "Session not found" });
-    res.json(session);
-  });
-
-  app.post("/api/workout-sessions", async (req, res) => {
-    const parsed = insertWorkoutSessionSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    const session = await storage.createWorkoutSession(parsed.data);
-    res.status(201).json(session);
-  });
-
-  app.patch("/api/workout-sessions/:id", async (req, res) => {
-    const session = await storage.updateWorkoutSession(Number(req.params.id), req.body);
-    if (!session) return res.status(404).json({ message: "Session not found" });
-    res.json(session);
-  });
-
-  // ── Workout Sets ──
-  app.get("/api/workout-sets/session/:sessionId", async (req, res) => {
-    const sets = await storage.getWorkoutSets(Number(req.params.sessionId));
-    res.json(sets);
-  });
-
-  app.post("/api/workout-sets", async (req, res) => {
-    const parsed = insertWorkoutSetSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    const set = await storage.createWorkoutSet(parsed.data);
-    res.status(201).json(set);
-  });
-
-  app.patch("/api/workout-sets/:id", async (req, res) => {
-    const set = await storage.updateWorkoutSet(Number(req.params.id), req.body);
-    if (!set) return res.status(404).json({ message: "Set not found" });
-    res.json(set);
-  });
-
-  // ── Body Metrics ──
-  app.get("/api/body-metrics/user/:userId", async (req, res) => {
-    const metrics = await storage.getBodyMetrics(Number(req.params.userId));
-    res.json(metrics);
-  });
-
-  app.post("/api/body-metrics", async (req, res) => {
-    const parsed = insertBodyMetricSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    const metric = await storage.createBodyMetric(parsed.data);
-    res.status(201).json(metric);
-  });
-
-  // ── Community Posts ──
-  app.get("/api/community-posts", async (_req, res) => {
-    const posts = await storage.getCommunityPosts();
-    res.json(posts);
-  });
-
-  app.post("/api/community-posts", async (req, res) => {
-    const parsed = insertCommunityPostSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    const post = await storage.createCommunityPost(parsed.data);
-    res.status(201).json(post);
-  });
-
-  app.patch("/api/community-posts/:id", async (req, res) => {
-    const post = await storage.updateCommunityPost(Number(req.params.id), req.body);
-    if (!post) return res.status(404).json({ message: "Post not found" });
-    res.json(post);
-  });
-
-  // ── Client Assignments ──
   app.get("/api/client-assignments/coach/:coachId", async (req, res) => {
-    const assignments = await storage.getClientAssignments(Number(req.params.coachId));
-    res.json(assignments);
+    res.json(await storage.getClientAssignmentsByCoach(Number(req.params.coachId)));
+  });
+
+  app.get("/api/client-assignments/client/:clientId", async (req, res) => {
+    const row = await storage.getClientAssignment(Number(req.params.clientId));
+    if (!row) return res.status(404).json({ message: "Assignment not found" });
+    res.json(row);
   });
 
   app.post("/api/client-assignments", async (req, res) => {
     const parsed = insertClientAssignmentSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    const assignment = await storage.createClientAssignment(parsed.data);
-    res.status(201).json(assignment);
+    res.status(201).json(await storage.createClientAssignment(parsed.data));
   });
 
-  app.delete("/api/client-assignments/:id", async (req, res) => {
-    await storage.deleteClientAssignment(Number(req.params.id));
-    res.status(204).send();
+  app.patch("/api/client-assignments/:id", async (req, res) => {
+    const row = await storage.updateClientAssignment(Number(req.params.id), req.body);
+    if (!row) return res.status(404).json({ message: "Assignment not found" });
+    res.json(row);
   });
 
-  // ── Friendships ──
-  app.get("/api/friendships/user/:userId", async (req, res) => {
-    const friends = await storage.getFriendships(Number(req.params.userId));
-    res.json(friends);
+  app.get("/api/workout-sessions/user/:userId", async (req, res) => {
+    res.json(await storage.getWorkoutSessions(Number(req.params.userId)));
   });
 
-  app.post("/api/friendships", async (req, res) => {
-    const parsed = insertFriendshipSchema.safeParse(req.body);
+  app.post("/api/workout-sessions", async (req, res) => {
+    const parsed = insertWorkoutSessionSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    const friendship = await storage.createFriendship(parsed.data);
-    res.status(201).json(friendship);
+    res.status(201).json(await storage.createWorkoutSession(parsed.data));
   });
 
-  app.patch("/api/friendships/:id", async (req, res) => {
-    const friendship = await storage.updateFriendship(Number(req.params.id), req.body);
-    if (!friendship) return res.status(404).json({ message: "Friendship not found" });
-    res.json(friendship);
+  app.patch("/api/workout-sessions/:id", async (req, res) => {
+    const row = await storage.updateWorkoutSession(Number(req.params.id), req.body);
+    if (!row) return res.status(404).json({ message: "Session not found" });
+    res.json(row);
   });
 
-  // ── User Profiles ──
-  app.get("/api/user-profiles/:userId", async (req, res) => {
-    const profile = await storage.getUserProfile(Number(req.params.userId));
-    if (!profile) return res.status(404).json({ message: "Profile not found" });
-    res.json(profile);
+  app.get("/api/workout-sets/session/:sessionId", async (req, res) => {
+    res.json(await storage.getWorkoutSets(Number(req.params.sessionId)));
   });
 
-  app.post("/api/user-profiles", async (req, res) => {
-    const parsed = insertUserProfileSchema.safeParse(req.body);
+  app.post("/api/workout-sets", async (req, res) => {
+    const parsed = insertWorkoutSetSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    const profile = await storage.createUserProfile(parsed.data);
-    res.status(201).json(profile);
+    res.status(201).json(await storage.createWorkoutSet(parsed.data));
   });
 
-  app.patch("/api/user-profiles/:userId", async (req, res) => {
-    const profile = await storage.updateUserProfile(Number(req.params.userId), req.body);
-    if (!profile) return res.status(404).json({ message: "Profile not found" });
-    res.json(profile);
+  app.get("/api/nutrition-plans/coach/:coachId", async (req, res) => {
+    res.json(await storage.getNutritionPlansByCoach(Number(req.params.coachId)));
   });
 
-  // ── Meal Logs ──
-  app.get("/api/meal-logs/user/:userId", async (req, res) => {
-    const logs = await storage.getMealLogs(Number(req.params.userId));
-    res.json(logs);
-  });
-
-  app.post("/api/meal-logs", async (req, res) => {
-    const parsed = insertMealLogSchema.safeParse(req.body);
+  app.post("/api/nutrition-plans", async (req, res) => {
+    const parsed = insertNutritionPlanSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
-    const log = await storage.createMealLog(parsed.data);
-    res.status(201).json(log);
+    res.status(201).json(await storage.createNutritionPlan(parsed.data));
+  });
+
+  app.patch("/api/nutrition-plans/:id", async (req, res) => {
+    const row = await storage.updateNutritionPlan(Number(req.params.id), req.body);
+    if (!row) return res.status(404).json({ message: "Nutrition plan not found" });
+    res.json(row);
+  });
+
+  app.get("/api/nutrition-assignments/client/:clientId", async (req, res) => {
+    const row = await storage.getNutritionAssignmentForClient(Number(req.params.clientId));
+    if (!row) return res.status(404).json({ message: "Nutrition assignment not found" });
+    res.json(row);
+  });
+
+  app.post("/api/nutrition-assignments", async (req, res) => {
+    const parsed = insertClientNutritionAssignmentSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
+    res.status(201).json(await storage.createNutritionAssignment(parsed.data));
+  });
+
+  app.get("/api/check-ins/coach/:coachId", async (req, res) => {
+    res.json(await storage.getCheckInsByCoach(Number(req.params.coachId)));
+  });
+
+  app.get("/api/check-ins/client/:clientId", async (req, res) => {
+    res.json(await storage.getCheckInsByClient(Number(req.params.clientId)));
+  });
+
+  app.post("/api/check-ins", async (req, res) => {
+    const parsed = insertCheckInSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
+    res.status(201).json(await storage.createCheckIn(parsed.data));
+  });
+
+  app.patch("/api/check-ins/:id/reply", async (req, res) => {
+    const row = await storage.replyToCheckIn(Number(req.params.id), req.body.coachReply);
+    if (!row) return res.status(404).json({ message: "Check-in not found" });
+    res.json(row);
+  });
+
+  app.get("/api/conversations/:coachId/:clientId", async (req, res) => {
+    const conversation = await storage.getOrCreateConversation(Number(req.params.coachId), Number(req.params.clientId));
+    const thread = await storage.getConversationMessages(conversation.id);
+    res.json({ conversation, messages: thread });
+  });
+
+  app.post("/api/messages", async (req, res) => {
+    const parsed = insertMessageSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: parsed.error.message });
+    res.status(201).json(await storage.createMessage(parsed.data));
   });
 
   return httpServer;

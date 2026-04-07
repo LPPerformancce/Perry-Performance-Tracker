@@ -1,35 +1,26 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import type { User } from "@shared/schema";
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
+import type { User } from "@shared/schema";
 
-interface UserContextType {
+interface UserContextValue {
   currentUser: User | null;
-  isLoading: boolean;
+  allUsers: User[];
   switchUser: (id: number) => void;
 }
 
-const UserContext = createContext<UserContextType>({ currentUser: null, isLoading: true, switchUser: () => {} });
+const UserContext = createContext<UserContextValue>({ currentUser: null, allUsers: [], switchUser: () => {} });
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [userId, setUserId] = useState(() => {
-    const stored = localStorage.getItem("lpp-user-id");
-    return stored ? Number(stored) : 2;
-  });
-
-  const { data: currentUser, isLoading } = useQuery<User>({
-    queryKey: ["/api/users", String(userId)],
-  });
+  const [userId, setUserId] = useState(() => Number(localStorage.getItem("lp-user-id") || 1));
+  const { data: allUsers = [] } = useQuery<User[]>({ queryKey: ["/api/users"] });
+  const currentUser = useMemo(() => allUsers.find((user) => user.id === userId) ?? null, [allUsers, userId]);
 
   const switchUser = (id: number) => {
     setUserId(id);
-    localStorage.setItem("lpp-user-id", String(id));
+    localStorage.setItem("lp-user-id", String(id));
   };
 
-  return (
-    <UserContext.Provider value={{ currentUser: currentUser ?? null, isLoading, switchUser }}>
-      {children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={{ currentUser, allUsers, switchUser }}>{children}</UserContext.Provider>;
 }
 
 export function useCurrentUser() {
