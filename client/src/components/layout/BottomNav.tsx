@@ -1,56 +1,22 @@
 import { Link, useLocation } from "wouter";
-import { Home, Dumbbell, List, Utensils, User, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useCurrentUser } from "@/lib/userContext";
 
 export function BottomNav() {
   const [location] = useLocation();
+  const { currentUser } = useCurrentUser();
+  const isCoach = currentUser?.role === "coach";
 
-  // Don't show bottom nav on active workout screen to maximize screen real estate
-  if (location.startsWith('/workout/active')) {
-    return null;
-  }
-
-  const navItems = [
-    { href: "/", icon: Home, label: "Home" },
-    { href: "/workout", icon: Dumbbell, label: "Workout" },
-    { href: "/exercises", icon: List, label: "Library" },
-    { href: "/nutrition", icon: Utensils, label: "Nutrition" },
-    { href: "/community", icon: Users, label: "Community" },
-    { href: "/profile", icon: User, label: "Profile" },
-  ];
+  const items = isCoach
+    ? [["/", "Clients"], ["/programs", "Training"], ["/nutrition", "Nutrition"], ["/check-ins", "Check-ins"], ["/messages", "Messages"]]
+    : [["/", "Home"], ["/training", "Training"], ["/nutrition", "Nutrition"], ["/check-ins", "Check-in"], ["/messages", "Messages"]];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border pb-safe shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.5)]">
-      <div className="flex items-center justify-around h-16 px-1 max-w-md mx-auto overflow-x-auto scrollbar-none gap-2">
-        {navItems.map((item) => {
-          const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
-          const Icon = item.icon;
-          
-          return (
-            <Link 
-              key={item.href} 
-              href={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center w-full h-full gap-1 transition-all duration-200",
-                isActive ? "text-primary" : "text-muted-foreground hover:text-primary/80"
-              )}
-            >
-              <div className={cn(
-                "p-1.5 rounded-full transition-all duration-200",
-                isActive ? "bg-primary/10 text-primary" : "bg-transparent text-muted-foreground"
-              )}>
-                <Icon className="w-[20px] h-[20px]" strokeWidth={isActive ? 2.5 : 2} />
-              </div>
-              <span className={cn(
-                "text-[10px] font-medium tracking-wide transition-all duration-200",
-                isActive ? "font-semibold" : ""
-              )}>
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
+    <nav className="bottom-nav">
+      {items.map(([href, label]) => (
+        <Link key={href} href={href} className={location === href ? "active" : ""}>
+          {label}
+        </Link>
+      ))}
     </nav>
   );
 }

@@ -1,5 +1,4 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, boolean, timestamp, jsonb, serial } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -8,10 +7,20 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   displayName: text("display_name").notNull(),
-  role: text("role").notNull().default("user"),
+  role: text("role").notNull().default("client"),
   avatarInitials: text("avatar_initials"),
-  program: text("program"),
-  shareActivity: boolean("share_activity").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const userProfiles = pgTable("user_profiles", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  goal: text("goal"),
+  experienceLevel: text("experience_level"),
+  trainingFrequency: text("training_frequency"),
+  injuries: text("injuries"),
+  equipmentAccess: text("equipment_access"),
+  dietaryPreferences: text("dietary_preferences"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -21,9 +30,7 @@ export const exercises = pgTable("exercises", {
   target: text("target").notNull(),
   category: text("category").notNull(),
   equipment: text("equipment").notNull(),
-  mechanic: text("mechanic").notNull(),
   description: text("description").notNull(),
-  imagePlaceholder: text("image_placeholder").notNull().default(""),
   isCustom: boolean("is_custom").notNull().default(false),
   createdBy: integer("created_by").references(() => users.id),
 });
@@ -32,9 +39,9 @@ export const programs = pgTable("programs", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
-  daysPerWeek: integer("days_per_week"),
-  durationWeeks: integer("duration_weeks"),
-  coachId: integer("coach_id").references(() => users.id),
+  daysPerWeek: integer("days_per_week").notNull().default(3),
+  durationWeeks: integer("duration_weeks").notNull().default(8),
+  coachId: integer("coach_id").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -53,7 +60,17 @@ export const programDayExercises = pgTable("program_day_exercises", {
   repsMin: integer("reps_min").notNull().default(8),
   repsMax: integer("reps_max").notNull().default(12),
   rpeTarget: integer("rpe_target").default(7),
+  notes: text("notes"),
   sortOrder: integer("sort_order").notNull().default(0),
+});
+
+export const clientAssignments = pgTable("client_assignments", {
+  id: serial("id").primaryKey(),
+  coachId: integer("coach_id").notNull().references(() => users.id),
+  clientId: integer("client_id").notNull().references(() => users.id),
+  programId: integer("program_id").references(() => programs.id),
+  active: boolean("active").notNull().default(true),
+  assignedAt: timestamp("assigned_at").defaultNow(),
 });
 
 export const workoutSessions = pgTable("workout_sessions", {
@@ -65,7 +82,6 @@ export const workoutSessions = pgTable("workout_sessions", {
   completedAt: timestamp("completed_at"),
   durationSeconds: integer("duration_seconds"),
   totalVolume: integer("total_volume").default(0),
-  feelingRating: integer("feeling_rating"),
   notes: text("notes"),
 });
 
@@ -81,112 +97,97 @@ export const workoutSets = pgTable("workout_sets", {
   exerciseOrder: integer("exercise_order").notNull().default(0),
 });
 
-export const bodyMetrics = pgTable("body_metrics", {
+export const nutritionPlans = pgTable("nutrition_plans", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  metricType: text("metric_type").notNull(),
-  value: text("value").notNull(),
-  recordedAt: timestamp("recorded_at").defaultNow(),
-});
-
-export const communityPosts = pgTable("community_posts", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  content: text("content").notNull(),
-  postType: text("post_type").notNull().default("update"),
-  likes: integer("likes").notNull().default(0),
-  comments: integer("comments").notNull().default(0),
+  coachId: integer("coach_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  description: text("description"),
+  caloriesTarget: integer("calories_target").notNull().default(2400),
+  proteinTarget: integer("protein_target").notNull().default(180),
+  carbsTarget: integer("carbs_target").notNull().default(220),
+  fatsTarget: integer("fats_target").notNull().default(70),
+  guidance: text("guidance"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const clientAssignments = pgTable("client_assignments", {
+export const clientNutritionAssignments = pgTable("client_nutrition_assignments", {
   id: serial("id").primaryKey(),
   coachId: integer("coach_id").notNull().references(() => users.id),
   clientId: integer("client_id").notNull().references(() => users.id),
-  programId: integer("program_id").references(() => programs.id),
+  nutritionPlanId: integer("nutrition_plan_id").notNull().references(() => nutritionPlans.id),
+  active: boolean("active").notNull().default(true),
   assignedAt: timestamp("assigned_at").defaultNow(),
 });
 
-export const friendships = pgTable("friendships", {
+export const checkIns = pgTable("check_ins", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  friendId: integer("friend_id").notNull().references(() => users.id),
-  status: text("status").notNull().default("pending"),
+  clientId: integer("client_id").notNull().references(() => users.id),
+  coachId: integer("coach_id").notNull().references(() => users.id),
+  summary: text("summary").notNull(),
+  energy: integer("energy").notNull().default(3),
+  sleep: integer("sleep").notNull().default(3),
+  adherence: integer("adherence").notNull().default(3),
+  bodyWeight: text("body_weight"),
+  notes: text("notes"),
+  coachReply: text("coach_reply"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const userProfiles = pgTable("user_profiles", {
+export const conversations = pgTable("conversations", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  fitnessGoal: text("fitness_goal"),
-  experienceLevel: text("experience_level"),
-  trainingFrequency: text("training_frequency"),
-  injuries: text("injuries"),
-  limitations: text("limitations"),
-  barriers: text("barriers"),
-  age: integer("age"),
-  height: text("height"),
-  weight: text("weight"),
-  targetWeight: text("target_weight"),
-  preferredWorkoutTime: text("preferred_workout_time"),
-  equipmentAccess: text("equipment_access"),
-  dietaryPreference: text("dietary_preference"),
-  onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
+  coachId: integer("coach_id").notNull().references(() => users.id),
+  clientId: integer("client_id").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const mealLogs = pgTable("meal_logs", {
+export const messages = pgTable("messages", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  mealType: text("meal_type").notNull(),
-  description: text("description").notNull(),
-  calories: integer("calories"),
-  protein: integer("protein"),
-  carbs: integer("carbs"),
-  fats: integer("fats"),
-  imageUrl: text("image_url"),
-  loggedAt: timestamp("logged_at").defaultNow(),
+  conversationId: integer("conversation_id").notNull().references(() => conversations.id),
+  senderId: integer("sender_id").notNull().references(() => users.id),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
+export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({ id: true, createdAt: true });
 export const insertExerciseSchema = createInsertSchema(exercises).omit({ id: true });
 export const insertProgramSchema = createInsertSchema(programs).omit({ id: true, createdAt: true });
 export const insertProgramDaySchema = createInsertSchema(programDays).omit({ id: true });
 export const insertProgramDayExerciseSchema = createInsertSchema(programDayExercises).omit({ id: true });
+export const insertClientAssignmentSchema = createInsertSchema(clientAssignments).omit({ id: true, assignedAt: true });
 export const insertWorkoutSessionSchema = createInsertSchema(workoutSessions).omit({ id: true, startedAt: true });
 export const insertWorkoutSetSchema = createInsertSchema(workoutSets).omit({ id: true });
-export const insertBodyMetricSchema = createInsertSchema(bodyMetrics).omit({ id: true, recordedAt: true });
-export const insertCommunityPostSchema = createInsertSchema(communityPosts).omit({ id: true, createdAt: true, likes: true, comments: true });
-export const insertClientAssignmentSchema = createInsertSchema(clientAssignments).omit({ id: true, assignedAt: true });
-export const insertFriendshipSchema = createInsertSchema(friendships).omit({ id: true, createdAt: true });
-export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({ id: true, createdAt: true });
-export const insertMealLogSchema = createInsertSchema(mealLogs).omit({ id: true, loggedAt: true });
+export const insertNutritionPlanSchema = createInsertSchema(nutritionPlans).omit({ id: true, createdAt: true });
+export const insertClientNutritionAssignmentSchema = createInsertSchema(clientNutritionAssignments).omit({ id: true, assignedAt: true });
+export const insertCheckInSchema = createInsertSchema(checkIns).omit({ id: true, coachReply: true, createdAt: true });
+export const insertConversationSchema = createInsertSchema(conversations).omit({ id: true, createdAt: true });
+export const insertMessageSchema = createInsertSchema(messages).omit({ id: true, createdAt: true });
 
-// Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
-export type Exercise = typeof exercises.$inferSelect;
-export type InsertExercise = z.infer<typeof insertExerciseSchema>;
-export type Program = typeof programs.$inferSelect;
-export type InsertProgram = z.infer<typeof insertProgramSchema>;
-export type ProgramDay = typeof programDays.$inferSelect;
-export type InsertProgramDay = z.infer<typeof insertProgramDaySchema>;
-export type ProgramDayExercise = typeof programDayExercises.$inferSelect;
-export type InsertProgramDayExercise = z.infer<typeof insertProgramDayExerciseSchema>;
-export type WorkoutSession = typeof workoutSessions.$inferSelect;
-export type InsertWorkoutSession = z.infer<typeof insertWorkoutSessionSchema>;
-export type WorkoutSet = typeof workoutSets.$inferSelect;
-export type InsertWorkoutSet = z.infer<typeof insertWorkoutSetSchema>;
-export type BodyMetric = typeof bodyMetrics.$inferSelect;
-export type InsertBodyMetric = z.infer<typeof insertBodyMetricSchema>;
-export type CommunityPost = typeof communityPosts.$inferSelect;
-export type InsertCommunityPost = z.infer<typeof insertCommunityPostSchema>;
-export type ClientAssignment = typeof clientAssignments.$inferSelect;
-export type InsertClientAssignment = z.infer<typeof insertClientAssignmentSchema>;
-export type Friendship = typeof friendships.$inferSelect;
-export type InsertFriendship = z.infer<typeof insertFriendshipSchema>;
-export type UserProfile = typeof userProfiles.$inferSelect;
 export type InsertUserProfile = z.infer<typeof insertUserProfileSchema>;
-export type MealLog = typeof mealLogs.$inferSelect;
-export type InsertMealLog = z.infer<typeof insertMealLogSchema>;
+export type UserProfile = typeof userProfiles.$inferSelect;
+export type InsertExercise = z.infer<typeof insertExerciseSchema>;
+export type Exercise = typeof exercises.$inferSelect;
+export type InsertProgram = z.infer<typeof insertProgramSchema>;
+export type Program = typeof programs.$inferSelect;
+export type InsertProgramDay = z.infer<typeof insertProgramDaySchema>;
+export type ProgramDay = typeof programDays.$inferSelect;
+export type InsertProgramDayExercise = z.infer<typeof insertProgramDayExerciseSchema>;
+export type ProgramDayExercise = typeof programDayExercises.$inferSelect;
+export type InsertClientAssignment = z.infer<typeof insertClientAssignmentSchema>;
+export type ClientAssignment = typeof clientAssignments.$inferSelect;
+export type InsertWorkoutSession = z.infer<typeof insertWorkoutSessionSchema>;
+export type WorkoutSession = typeof workoutSessions.$inferSelect;
+export type InsertWorkoutSet = z.infer<typeof insertWorkoutSetSchema>;
+export type WorkoutSet = typeof workoutSets.$inferSelect;
+export type InsertNutritionPlan = z.infer<typeof insertNutritionPlanSchema>;
+export type NutritionPlan = typeof nutritionPlans.$inferSelect;
+export type InsertClientNutritionAssignment = z.infer<typeof insertClientNutritionAssignmentSchema>;
+export type ClientNutritionAssignment = typeof clientNutritionAssignments.$inferSelect;
+export type InsertCheckIn = z.infer<typeof insertCheckInSchema>;
+export type CheckIn = typeof checkIns.$inferSelect;
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Message = typeof messages.$inferSelect;
